@@ -107,6 +107,25 @@ class Book:
         )
         return tmp
 
+    def totals_for_fpa(self, apo, eos):
+        dapo = apo if apo else '1900-01-01'
+        deos = eos if eos else '3000-12-31'
+        if dapo > deos:
+            dapo = deos
+        iso = {}
+        for tra in self.transactions:
+            if dapo <= tra['date'] <= deos:
+                for lin in tra['lines']:
+                    account = lin['account']
+                    if account[0] not in '1267':
+                        continue
+                    iso[account] = iso.get(account, dec(0))
+                    if account[0] in '126':
+                        iso[account] += lin['value'] if lin['typ'] == 1 else -lin['value']
+                    elif account[0] == '7':
+                        iso[account] += lin['value'] if lin['typ'] == 2 else -lin['value']
+        return iso
+
     def fpa(self, apo=None, eos=None):
         """
         Αναφορά ΦΠΑ για την περίοδο apo-eos
