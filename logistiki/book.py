@@ -5,6 +5,21 @@ from logistiki.logger import logger
 from logistiki.account import levels_reverse
 
 
+def ee_value_sign(acline):
+    if acline['account'][0] in '126':
+        if acline['typ'] == 1:
+            return acline['value']
+        else:
+            return -acline['value']
+    elif acline['account'][0] == '7':
+        if acline['typ'] == 1:
+            return -acline['value']
+        else:
+            return acline['value']
+    else:
+        return acline['value']
+
+
 class Book:
     def __init__(self, co_data, transactions, accounts, afms) -> None:
         self.name = co_data['name']
@@ -97,20 +112,10 @@ class Book:
                 for lin in trn['lines']:
                     if lin['account'][0] in '1267':
                         accounts.add(lin['account'])
-                    if lin['account'][0] in '2':
-                        tval += lin['value']
-                        typos.add('2')
-                    elif lin['account'][0] in '6':
-                        tval += lin['value']
-                        typos.add('6')
-                    elif lin['account'][0] == '1':
-                        tval += lin['value']
-                        typos.add('1')
+                        tval += ee_value_sign(lin)
+                        typos.add(lin['account'][0])
                     elif lin['account'].startswith('54.00.'):
-                        tfpa += lin['value']
-                    elif lin['account'][0] == '7':
-                        tval += lin['value']
-                        typos.add('7')
+                        tfpa += ee_value_sign(lin)
                 eebook.append({
                     'typos': ''.join(sorted(list(typos))),
                     'id': counter,
@@ -153,20 +158,20 @@ class Book:
                 fpa7 += trn['fpa']
             trn['eper'] = trn['perigrafi'][:50]
             print(
-                '{id:<5}{typos:<3}{date} {afm:<9} {parno:<20} {eper:<50}{value:>12}'
+                '{id:<5}{typos:<3}{date} {afm:<9} '
+                '{parno:<20} {eper:<50}{value:>12}'
                 '{fpa:>12}{total:>12} {accounts}'.format(**trn)
             )
-        print('----------------------------------------')
+        print('')
+        print('=' * 40)
+        print(f"  Ομάδες       {'Αξία':^12} {'ΦΠΑ':^12}")
+        print('-' * 40)
         print(f"Ομάδα 2      : {tot2:>12} {fpa2:>12}")
         print(f"Ομάδα 6      : {tot6:>12} {fpa6:>12}")
-        print('----------------------------------------')
         print(f"Σύνολο 2+6   : {tot6+tot2:>12} {fpa6+fpa2:>12}")
-        print('\n')
         print(f"Ομάδα 7      : {tot7:>12} {fpa7:>12}")
-        print('----------------------------------------')
         print(f"Κέρδος 7-2-6 : {tot7-tot6-tot2:>12} {fpa7-fpa6-fpa2:>12}")
-        print('----------------------------------------')
-
+        print('=' * 40)
         print(
             f"Parameters(only={only}, exclude={exclude})")
 
