@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<packages>
+  <package actor_afm="123123123" month="12" year="2019" branch="">
+    <groupedRevenues action="replace">
+      <revenue> <afm>111222333</afm> <amount>100,00</amount> <tax>24,00</tax> <invoices>2</invoices> <note>normal</note> <date>2019-12-31</date> </revenue>
+      <revenue> <afm>111222444</afm> <amount>200,00</amount> <tax>48,00</tax> <invoices>5</invoices> <note>normal</note> <date>2019-12-31</date> </revenue>
+      <revenue> <afm>111222444</afm> <amount>100,00</amount> <tax>24,00</tax> <invoices>1</invoices> <note>credit</note> <date>2019-12-31</date> </revenue>
+    </groupedRevenues>
+    <groupedCashRegisters action="replace">
+      <cashregister>
+        <cashreg_id></cashreg_id> <amount>100,00</amount> <tax>24,00</tax> <date>2019-12-31</date>
+      </cashregister>
+    </groupedCashRegisters>
+    <groupedExpenses action="replace">
+      <expense> <afm>111222333</afm> <amount>100,00</amount> <tax>24,00</tax> <invoices>12</invoices> <note>normal</note> <nonObl>0</nonObl> <date>2019-12-31</date> </expense>
+      <expense> <afm>111111333</afm> <amount>325,68</amount> <tax>68,34</tax> <invoices>15</invoices> <note>normal</note> <nonObl>0</nonObl> <date>2019-12-31</date> </expense>
+    </groupedExpenses>
+    <otherExpenses>
+      <amount>12344,56</amount> <tax>4326,44</tax> <date>2019-12-31</date>
+    </otherExpenses>
+  </package>
+</packages>
