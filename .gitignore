@@ -127,3 +127,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Tedlaz
+validated_afms.txt
+zzz_afms_to_validate.txt

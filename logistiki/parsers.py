@@ -1,7 +1,7 @@
 from collections import defaultdict
 from logistiki.logger import logger
-from logistiki.dec import dec, gr2dec, is_afm
-from logistiki.grdate import date_gr2iso
+from logistiki.udec import dec, gr2dec, is_afm
+from logistiki.ugrdate import date_gr2iso
 from logistiki.book import Book
 
 

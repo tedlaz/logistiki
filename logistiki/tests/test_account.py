@@ -45,5 +45,7 @@ class TestsAccount(TestCase):
         self.assertEqual(ac1.without_name(), ['10.00.000', '13.00.000'])
 
     def test_levels(self):
-        print(levels('20.00.000'))
-        print(levels_reverse('20.00.000'))
+        self.assertEqual(('2', '20', '20.00', '20.00.000'),
+                         levels('20.00.000'))
+        self.assertEqual(('20.00.000', '20.00', '20', '2'),
+                         levels_reverse('20.00.000'))

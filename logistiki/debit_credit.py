@@ -1,6 +1,6 @@
 from decimal import Decimal
 from typing import TypeVar
-from logistiki.dec import dec, dec2gr
+from logistiki.udec import dec, dec2gr
 
 
 TDebitCredit = TypeVar("TDebitCredit", bound="DebitCredit")

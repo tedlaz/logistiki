@@ -1,6 +1,8 @@
 from logistiki.utils import startswith_any, dec2grp
-from logistiki.dec import dec
+from logistiki.ugrdate import date2gr
+from logistiki.udec import dec, dec2gr
 from logistiki.logger import logger
+from logistiki.account import levels_reverse
 
 
 class Book:
@@ -17,9 +19,64 @@ class Book:
         """
         Ισοζύγιο λογαριασμών
         """
-        pass
+        dapo = apo if apo else '1900-01-01'
+        deos = eos if eos else '3000-12-31'
+        if dapo > deos:
+            dapo == deos
+        iso = {}
+        txr = tpi = typ = 0
+        for tra in self.transactions:
+            if dapo <= tra['date'] <= deos:
+                for lin in tra['lines']:
+                    debit = lin['value'] if lin['typ'] == 1 else 0
+                    credit = lin['value'] if lin['typ'] == 2 else 0
+                    gcode = lin['account']
+                    iso[gcode] = iso.get(
+                        gcode, {'debit': dec(0), 'credit': dec(0)})
+                    iso[gcode]['debit'] += debit
+                    iso[gcode]['credit'] += credit
+                    txr += debit
+                    tpi += credit
+                    typ += debit - credit
+        fiso = {}
+        apot = 0
+        for code, val in iso.items():
+            for lcode in levels_reverse(code):
+                fiso[lcode] = fiso.get(
+                    lcode, {'debit': dec(0), 'credit': dec(0)})
+                fiso[lcode]['debit'] += val['debit']
+                fiso[lcode]['credit'] += val['credit']
+            if code[0] in '267':
+                apot += val['debit'] - val['credit']
+        if apo:
+            tapo = f' Από: {date2gr(dapo)}'
+        else:
+            tapo = ''
+        if eos:
+            teos = f' Έως: {date2gr(deos)}'
+        else:
+            teos = ''
+        tapoeos = f'{tapo}{teos}'
+        tmp = f"\n{'ΙΣΟΖΥΓΙΟ ΛΟΓΙΣΤΙΚΗΣ':^104}\n"
+        tmp += f"{tapoeos:^104}\n"
+        tmp += '-' * 104 + '\n'
+        for acc in sorted(fiso):
+            delta = dec2gr(fiso[acc]['debit'] - fiso[acc]['credit'])
+            accp = self.accounts[acc] if acc in self.accounts else ''
+            tmp += (
+                f"{acc:<15}{accp:<50} {dec2gr(fiso[acc]['debit']):>12} "
+                f"{dec2gr(fiso[acc]['credit']):>12} {delta:>12}\n"
+            )
+        tmp += '-' * 104 + '\n'
+        tmp += (
+            f"{'':<15}{'Σύνολα':^50} {dec2gr(txr):>12} "
+            f"{dec2gr(tpi):>12} {dec2gr(typ):>12}\n"
+            f"{'':<15}{'Αποτέλεσμα (2, 6, 7)':^50} {dec2gr(0):>12} "
+            f"{dec2gr(0):>12} {dec2gr(apot):>12}\n"
+        )
+        return tmp
 
-    def fpa_report(self, apo=None, eos=None):
+    def fpa(self, apo=None, eos=None):
         """
         Αναφορά ΦΠΑ για την περίοδο apo-eos
         """
@@ -258,11 +315,86 @@ class Book:
             data['gcash'].append(tam)
         return data
 
-    def kartella(self, code):
+    def kartella(self, account, apo=None, eos=None):
         """
-        Καρτέλλα λογαριασμού με βάση τον κωδικό
+        Μας δίνει την καρτέλλα του λογαριασμού
+        id ημερομηνία παραστατικό περιγραφή χρεωση πίστωση υπόλοιπο
+        -------------------------------------------------------------
+                      από μεταφορά            100.34  30.88     20.33
+        12  10/1/2020   ΤΔΑ322      αγορες     10.35
         """
-        pass
+        dapo = apo if apo else '1900-01-01'
+        deos = eos if eos else '3000-12-31'
+        if dapo > deos:
+            dapo == deos
+        tdelta = dec(0)
+        prin = {'id': '', 'dat': '', 'acc': '', 'par': 'Aπό μεταφορά',
+                'per': '', 'debit': dec(0), 'credit': dec(0), 'delta': dec(0)}
+        per = []
+        meta = {'id': '', 'dat': '', 'acc': '', 'par': 'Επόμενες εγγραφές', 'per': '',
+                'debit': dec(0), 'credit': dec(0), 'delta': dec(0)}
+        for trn in self.transactions:
+            for lin in trn['lines']:
+                debit = lin['value'] if lin['typ'] == 1 else 0
+                credit = lin['value'] if lin['typ'] == 2 else 0
+                if lin['account'].startswith(account):
+                    if trn['date'] < dapo:
+                        prin['debit'] += debit
+                        prin['credit'] += credit
+                        tdelta += debit - credit
+                        prin['delta'] = tdelta
+                    elif dapo <= trn['date'] <= deos:
+                        tdelta += debit - credit
+                        adi = {
+                            'id': trn['id'],
+                            'dat': trn['date'],
+                            'acc': lin['account'],
+                            'par': trn['parno'][:20],
+                            'per': trn['perigrafi'][:45],
+                            'debit': dec2gr(debit),
+                            'credit': dec2gr(credit),
+                            'delta': dec2gr(tdelta)
+                        }
+                        per.append(adi)
+                    else:
+                        meta['debit'] += debit
+                        meta['credit'] += credit
+                        tdelta += debit - credit
+                        meta['delta'] = tdelta
+        if prin['delta'] == 0:
+            dprin = []
+        else:
+            prin['debit'] = dec2gr(prin['debit'])
+            prin['credit'] = dec2gr(prin['credit'])
+            prin['delta'] = dec2gr(prin['delta'])
+            dprin = [prin]
+        if meta['delta'] == 0:
+            dmeta = []
+        else:
+            meta['debit'] = dec2gr(meta['debit'])
+            meta['credit'] = dec2gr(meta['credit'])
+            meta['delta'] = dec2gr(meta['delta'])
+            dmeta = [meta]
+        data = dprin + per + dmeta
+        tit = {
+            'id': 'AA', 'dat': 'Ημ/νία', 'acc': 'Λογαριασμός',
+            'par': 'Παραστατικό', 'per': 'Περιγραφή',
+            'debit': 'Χρέωση', 'credit': 'Πίστωση', 'delta': 'Υπόλοιπο'
+        }
+        fst = (
+            "{id:<4} {dat:10} {acc:<15} {par:<20} {per:<45} "
+            "{debit:>12} {credit:>12} {delta:>12}\n"
+        )
+        st1 = f"\nΚαρτέλλα λογαριασμού {account}\n"
+        if apo:
+            st1 += f'Aπό: {date2gr(dapo)}\n'
+        if eos:
+            st1 += f'Έως: {date2gr(deos)}\n'
+        st1 += fst.format(**tit)
+        st1 += '-' * 137 + '\n'
+        for line in data:
+            st1 += fst.format(**line)
+        return st1
 
     def __repr__(self):
         return (

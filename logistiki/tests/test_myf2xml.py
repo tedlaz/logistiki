@@ -37,9 +37,10 @@ class TestsMyf2xml(TestCase):
                 'amount': '12344,56', 'tax': '4326,44', 'date': '2019-12-31'
             }
         }
-        xmld = create_xml(data)
+        xmld, afms = create_xml(data)
         xmlfile = os.path.join(dir_path, 'test_myf2xml.xml')
         xml_from_file = ''
         with open(xmlfile) as fil:
             xml_from_file = fil.read()
         self.assertEqual(xmld, xml_from_file)
+        self.assertEqual(['111111333', '111222333', '111222444'], afms)

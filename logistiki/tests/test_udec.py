@@ -1,6 +1,6 @@
 from unittest import TestCase
-# from decimal import Decimal
-from logistiki.dec import dec, dec2gr, gr2dec
+from decimal import Decimal
+from logistiki.udec import dec, dec2gr, gr2dec
 
 
 class TestsDec(TestCase):
@@ -25,3 +25,10 @@ class TestsDec(TestCase):
         self.assertEqual(dec('1.545'), dec(1.55))
         self.assertEqual(dec('1.2445'), dec(1.24))
         self.assertEqual(dec('-1.2445'), dec(-1.24))
+
+    def test_different_decimals(self):
+        self.assertEqual(dec('100.256'), Decimal('100.26'))
+        self.assertEqual(dec('100.256', 2), Decimal('100.26'))
+        self.assertEqual(dec('100.256', 1), Decimal('100.3'))
+        self.assertEqual(dec('100.256', 0), Decimal('100.3'))
+        self.assertEqual(dec('100.256', -3), Decimal('100.3'))

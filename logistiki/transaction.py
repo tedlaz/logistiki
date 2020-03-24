@@ -4,7 +4,7 @@ from hashlib import sha1
 from collections import namedtuple, defaultdict
 from typing import List, Type, TypeVar, ValuesView
 from logistiki.transaction_line import TransactionLine
-from logistiki.dec import dec
+from logistiki.udec import dec
 
 TranTotals = namedtuple('TranTotals', 'tdebit tcredit delta counter')
 Myf = namedtuple('Myf', 'typ xrpi date par val fpa tot')

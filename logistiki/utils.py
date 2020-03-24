@@ -2,6 +2,8 @@ def startswith_any(txts_tuple: tuple, filters_tuple: tuple) -> bool:
     """
     txt: The text to filter
     txt_tuple: A tuple with filter values
+    Checks if any element of txts_tuple starts with any element of
+           filters_tuple
     """
     for txt in txts_tuple:
         for txt_filter in filters_tuple:

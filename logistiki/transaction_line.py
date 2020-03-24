@@ -2,7 +2,7 @@ from decimal import Decimal
 from hashlib import sha1
 from logistiki.account import Account
 from typing import TypeVar
-from logistiki.dec import dec
+from logistiki.udec import dec
 
 
 TLine = TypeVar("TLine", bound="TransactionLine")

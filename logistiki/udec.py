@@ -18,11 +18,14 @@ def isNum(val):  # is val number or not
         return True
 
 
-def dec(anum):
+def dec(anum, decimals=2):
+    if decimals <= 1:
+        decimals = 1
+    rounder = Decimal('0.' + '0' * (decimals - 1) + '1')
     try:
-        val = Decimal(anum).quantize(Decimal('.01'), rounding=ROUND_HALF_UP)
+        val = Decimal(anum).quantize(rounder, rounding=ROUND_HALF_UP)
     except:
-        val = Decimal(0).quantize(Decimal('.01'), rounding=ROUND_HALF_UP)
+        val = Decimal(0).quantize(rounder, rounding=ROUND_HALF_UP)
     return val
 
 

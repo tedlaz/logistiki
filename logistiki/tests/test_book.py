@@ -10,10 +10,10 @@ class TestsBook(TestCase):
             '13.00.000': '',
             '10.00.000': ''
         }
-        b1 = Book('book1')
-        b1.accounts.add_accounts_from_dict(ali)
-        self.assertEqual(b1.accounts.without_name(),
-                         ['10.00.000', '13.00.000'])
+        # b1 = Book('book1')
+        # b1.accounts.add_accounts_from_dict(ali)
+        # self.assertEqual(b1.accounts.without_name(),
+        #                  ['10.00.000', '13.00.000'])
         trans = [
             {
                 'date': '2020-04-01', 'par': 'ΤΔΑ4', 'per': 'Δοκιμή τεστ1',
@@ -34,6 +34,6 @@ class TestsBook(TestCase):
                 ]
             }
         ]
-        b1.add_transactions_from_list(trans)
-        # print(b1.kartella('20.00', '2020-03-01', '2020-12-31'))
-        print(b1.delta('5'))
+        # b1.add_transactions_from_list(trans)
+        # # print(b1.kartella('20.00', '2020-03-01', '2020-12-31'))
+        # print(b1.delta('5'))
