@@ -1,5 +1,5 @@
 from logistiki.utils import startswith_any, dec2grp
-from logistiki.ugrdate import date2gr
+from logistiki.ugrdate import date_iso2gr
 from logistiki.udec import dec, dec2gr
 from logistiki.logger import logger
 from logistiki.account import levels_reverse
@@ -20,24 +20,37 @@ def ee_value_sign(acline):
         return acline['value']
 
 
+def closest_name(code: str, chart: dict) -> str:
+    """
+    Get closest possible name for the account
+    """
+    if not chart:
+        return ''
+    levels = levels_reverse(code)
+    for level in levels:
+        if level in chart:
+            return chart[level]
+    return ''
+
+
 class Book:
     def __init__(self, co_data, transactions, accounts, afms) -> None:
         self.name = co_data['name']
         self.afm = co_data['afm']
         self.year = co_data['year']
         self.branch = co_data['branch']
-        self.accounts = accounts
+        self.accounts = accounts  # Dictionary with accounts : names
         self.transactions = transactions
         self.afms = afms
 
-    def isozygio(self, apo=None, eos=None):
+    def isozygio(self, apo=None, eos=None, chart=None):
         """
         Ισοζύγιο λογαριασμών
         """
         dapo = apo if apo else '1900-01-01'
         deos = eos if eos else '3000-12-31'
         if dapo > deos:
-            dapo == deos
+            dapo = deos
         iso = {}
         txr = tpi = typ = 0
         for tra in self.transactions:
@@ -64,11 +77,11 @@ class Book:
             if code[0] in '267':
                 apot += val['debit'] - val['credit']
         if apo:
-            tapo = f' Από: {date2gr(dapo)}'
+            tapo = f' Από: {date_iso2gr(dapo)}'
         else:
             tapo = ''
         if eos:
-            teos = f' Έως: {date2gr(deos)}'
+            teos = f' Έως: {date_iso2gr(deos)}'
         else:
             teos = ''
         tapoeos = f'{tapo}{teos}'
@@ -77,7 +90,10 @@ class Book:
         tmp += '-' * 104 + '\n'
         for acc in sorted(fiso):
             delta = dec2gr(fiso[acc]['debit'] - fiso[acc]['credit'])
-            accp = self.accounts[acc] if acc in self.accounts else ''
+            if acc in self.accounts:
+                accp = self.accounts[acc]
+            else:
+                accp = closest_name(acc, chart)
             tmp += (
                 f"{acc:<15}{accp:<50} {dec2gr(fiso[acc]['debit']):>12} "
                 f"{dec2gr(fiso[acc]['credit']):>12} {delta:>12}\n"
@@ -331,13 +347,14 @@ class Book:
         dapo = apo if apo else '1900-01-01'
         deos = eos if eos else '3000-12-31'
         if dapo > deos:
-            dapo == deos
+            deos = dapo
         tdelta = dec(0)
         prin = {'id': '', 'dat': '', 'acc': '', 'par': 'Aπό μεταφορά',
                 'per': '', 'debit': dec(0), 'credit': dec(0), 'delta': dec(0)}
         per = []
         meta = {'id': '', 'dat': '', 'acc': '', 'par': 'Επόμενες εγγραφές', 'per': '',
                 'debit': dec(0), 'credit': dec(0), 'delta': dec(0)}
+        per_debit = per_credit = 0
         for trn in self.transactions:
             for lin in trn['lines']:
                 debit = lin['value'] if lin['typ'] == 1 else 0
@@ -349,6 +366,8 @@ class Book:
                         tdelta += debit - credit
                         prin['delta'] = tdelta
                     elif dapo <= trn['date'] <= deos:
+                        per_debit += debit
+                        per_credit += credit
                         tdelta += debit - credit
                         adi = {
                             'id': trn['id'],
@@ -392,13 +411,19 @@ class Book:
         )
         st1 = f"\nΚαρτέλλα λογαριασμού {account}\n"
         if apo:
-            st1 += f'Aπό: {date2gr(dapo)}\n'
+            st1 += f'Aπό: {date_iso2gr(dapo)}\n'
         if eos:
-            st1 += f'Έως: {date2gr(deos)}\n'
+            st1 += f'Έως: {date_iso2gr(deos)}\n'
         st1 += fst.format(**tit)
         st1 += '-' * 137 + '\n'
         for line in data:
             st1 += fst.format(**line)
+        synper = {
+            'id': '', 'dat': '', 'acc': '',
+            'par': 'Σύνολα περιόδου', 'per': '',
+            'debit': dec2gr(per_debit), 'credit': dec2gr(per_credit), 'delta': dec2gr(per_debit - per_credit)
+        }
+        st1 += fst.format(**synper)
         return st1
 
     def __repr__(self):
