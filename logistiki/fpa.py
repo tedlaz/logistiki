@@ -37,12 +37,12 @@ def main(apo, eos, outfile=None, ini_file='logistiki.ini'):
                 fpad[code] += dec(value * dec(fpa) / dec(100))
                 # print(code, account, value, fpa, dec(value * dec(fpa) / dec(100)))
     for cods in [361, 362, 363, 364, 365, 366]:
-        fdata[cods+20] = fpad.get(cods, dec(0))
+        fpa_value = fpad.get(cods, dec(0))
+        if fpa_value != 0:  # Για να αποφύγω τις μηδενικές τιμές
+            fdata[cods+20] = fpa_value
     # DATA = {361: dec(95156.97), 303: dec(101119.21), 381: dec(100.34),
     #         306: dec(28529.25), 364: dec(1825.68), 349: dec(39527.90)}
     f2_render(codata, fdata, outfile)
-    # print(acc_code_fpa)
-    # print(book.kartella(account, apo=apo, eos=eos))
 
 
 if __name__ == '__main__':
