@@ -36,6 +36,7 @@ def main(apo, eos, outfile=None, ini_file='logistiki.ini'):
                 fpad[code] = fpad.get(code, dec(0))
                 fpad[code] += dec(value * dec(fpa) / dec(100))
                 # print(code, account, value, fpa, dec(value * dec(fpa) / dec(100)))
+    fdata[5400] = isozygio[5400]
     for cods in [361, 362, 363, 364, 365, 366]:
         fpa_value = fpad.get(cods, dec(0))
         if fpa_value != 0:  # Για να αποφύγω τις μηδενικές τιμές

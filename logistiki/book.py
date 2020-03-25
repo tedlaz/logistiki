@@ -113,17 +113,24 @@ class Book:
         if dapo > deos:
             dapo = deos
         iso = {}
+        fpa_delta = 0
         for tra in self.transactions:
             if dapo <= tra['date'] <= deos:
                 for lin in tra['lines']:
                     account = lin['account']
+                    if account.startswith('54.00'):
+                        if not account.startswith('54.00.99'):
+                            fpa_delta += lin['value'] if lin['typ'] == 1 else - \
+                                lin['value']
                     if account[0] not in '1267':
                         continue
                     iso[account] = iso.get(account, dec(0))
                     if account[0] in '126':
                         iso[account] += lin['value'] if lin['typ'] == 1 else -lin['value']
                     elif account[0] == '7':
-                        iso[account] += lin['value'] if lin['typ'] == 2 else -lin['value']
+                        iso[account] += lin['value'] if lin['typ'] == 2 else - \
+                            lin['value']
+        iso[5400] = fpa_delta
         return iso
 
     def fpa(self, apo=None, eos=None):
@@ -371,8 +378,10 @@ class Book:
         prin = {'id': '', 'dat': '', 'acc': '', 'par': 'Aπό μεταφορά',
                 'per': '', 'debit': dec(0), 'credit': dec(0), 'delta': dec(0)}
         per = []
-        meta = {'id': '', 'dat': '', 'acc': '', 'par': 'Επόμενες εγγραφές', 'per': '',
-                'debit': dec(0), 'credit': dec(0), 'delta': dec(0)}
+        meta = {
+            'id': '', 'dat': '', 'acc': '', 'par': 'Επόμενες εγγραφές',
+            'per': '', 'debit': dec(0), 'credit': dec(0), 'delta': dec(0)
+        }
         per_debit = per_credit = 0
         for trn in self.transactions:
             for lin in trn['lines']:
@@ -411,14 +420,8 @@ class Book:
             prin['credit'] = dec2gr(prin['credit'])
             prin['delta'] = dec2gr(prin['delta'])
             dprin = [prin]
-        if meta['delta'] == 0:
-            dmeta = []
-        else:
-            meta['debit'] = dec2gr(meta['debit'])
-            meta['credit'] = dec2gr(meta['credit'])
-            meta['delta'] = dec2gr(meta['delta'])
-            dmeta = [meta]
-        data = dprin + per + dmeta
+
+        data = dprin + per
         tit = {
             'id': 'AA', 'dat': 'Ημ/νία', 'acc': 'Λογαριασμός',
             'par': 'Παραστατικό', 'per': 'Περιγραφή',
@@ -437,12 +440,18 @@ class Book:
         st1 += '-' * 137 + '\n'
         for line in data:
             st1 += fst.format(**line)
-        synper = {
+        synola_periodoy = {
             'id': '', 'dat': '', 'acc': '',
             'par': 'Σύνολα περιόδου', 'per': '',
-            'debit': dec2gr(per_debit), 'credit': dec2gr(per_credit), 'delta': dec2gr(per_debit - per_credit)
+            'debit': dec2gr(per_debit), 'credit': dec2gr(per_credit),
+            'delta': dec2gr(0)
         }
-        st1 += fst.format(**synper)
+        st1 += fst.format(**synola_periodoy)
+        if meta['delta'] != 0:
+            meta['debit'] = dec2gr(meta['debit'])
+            meta['credit'] = dec2gr(meta['credit'])
+            meta['delta'] = dec2gr(meta['delta'])
+            st1 += fst.format(**meta)
         return st1
 
     def __repr__(self):

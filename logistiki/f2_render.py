@@ -70,6 +70,13 @@ def calculate_f2(dat):
     for elm in range(381, 387):
         adi[elm] = dat.get(elm, dec(0))
     adi[387] = sumd(adi, range(381, 387))
+    # Ο λογαριασμός ελέγχου του φπα περιόδου
+    fpa_apo_logistiki = dat.get(5400, dec(0))
+    delta_fpa = adi[337] - adi[387] + fpa_apo_logistiki
+    if delta_fpa > 0:
+        dat[402] = delta_fpa
+    elif delta_fpa < 0:
+        dat[422] = -delta_fpa
     # Προστιθέμενα ποσά
     for elm in [400, 402, 407]:
         adi[elm] = dat.get(elm, dec(0))
@@ -78,7 +85,7 @@ def calculate_f2(dat):
     for elm in [411, 422, 423]:
         adi[elm] = dat.get(elm, dec(0))
     adi[428] = sumd(adi, [411, 422, 423])
-    adi[430] = adi[387] + adi[410] + adi[428]
+    adi[430] = adi[387] + adi[410] - adi[428]
     # Πίνακας Εκκαθάρισης Φόρου
     adi[401] = dat.get(401, dec(0))
     adi[483] = dat.get(483, dec(0))
