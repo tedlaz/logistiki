@@ -7,6 +7,10 @@ import argparse
 
 
 def main(apo, eos, outfile=None, ini_file='logistiki.ini'):
+    """
+    Για τον υπολογισμό του φπα χρησιμοποιούμε παραμέτρους από το αρχείο
+    logistiki.ini
+    """
     cfg = ConfigParser()
     cfg.read(ini_file)
     # Εδώ δημιουργούμε το {'20.00.24': {363: 24}, ...}
@@ -23,7 +27,7 @@ def main(apo, eos, outfile=None, ini_file='logistiki.ini'):
     codata = dict(cfg['company'])
     codata['apo'] = date_iso2gr(apo)
     codata['eos'] = date_iso2gr(eos)
-    # Εδώ φορτώνουμε τα δεδομένα στο βιβλία
+    # Εδώ φορτώνουμε τα δεδομένα στο βιβλίο
     book = prs.parse_all(dict(cfg['company']), dict(cfg['parse']))
     isozygio = book.totals_for_fpa(apo, eos)
     fdata = {}

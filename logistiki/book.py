@@ -40,8 +40,32 @@ class Book:
         self.year = co_data['year']
         self.branch = co_data['branch']
         self.accounts = accounts  # Dictionary with accounts : names
-        self.transactions = transactions
+        self.transactions = transactions  # list of dict of transactions
         self.afms = afms
+
+    def trans_print(self, tran_id):
+        trans = self.transactions[tran_id - 1]
+        str = f"┌─◆ Άρθρο {trans['id']}\n"
+        str += f"│\n"
+        str += f"│ Ημερομηνία  : {date_iso2gr(trans['date'])}\n"
+        str += f"│ Παραστατικό : {trans['partype']} {trans['parno']}\n"
+        str += f"│ Περιγραφή   : {trans['perigrafi']} {trans['perigr2']}\n"
+        str += f"│ ΑΦΜ         : {trans['afm']}\n"
+        str += f"│\n"
+        ltm = "│ {acc:<13} {acp:<40} {deb:>14} {cre:>14} \n"
+        str += ltm.format(acc='Λογαριασμός', acp='Περιγραφή',
+                          deb='Χρέωση', cre='Πίστωση')
+        str += ltm.format(acc='-----------', acp='---------',
+                          deb='------', cre='-------')
+        # str += '│ ' + '-' * 50 + '\n'
+        # str += ltm.format(acc='-----------', deb='------', cre='-------')
+        for lin in trans['lines']:
+            deb = dec2gr(lin['value'] if lin['typ'] == 1 else 0)
+            cre = dec2gr(lin['value'] if lin['typ'] == 2 else 0)
+            acp = self.accounts[lin['account']]
+            str += ltm.format(acc=lin['account'], acp=acp, deb=deb, cre=cre)
+        str += "└─►\n"
+        print(str)
 
     def isozygio(self, apo=None, eos=None, chart=None):
         """

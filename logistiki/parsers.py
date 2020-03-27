@@ -255,9 +255,9 @@ def parse_all(co_data: dict, parsefiles: dict) -> Book:
     Τρέχουν όλοι οι parsers και παίρνουμε σαν έξοδο ένα βιβλίο λογιστικής
     """
 
-    afms = parse_afm(parsefiles['fafm'])
-    eelines, eetypes = parse_esex(parsefiles['fee'])
-    transactions, accounts = parse_imerologio(parsefiles['fel'])
+    afms = parse_afm(parsefiles['afms'])
+    eelines, eetypes = parse_esex(parsefiles['esoda_ejoda'])
+    transactions, accounts = parse_imerologio(parsefiles['geniko_imerologio'])
     for trn in transactions:
         trn['afm'] = eelines[trn['date']][trn['parno']]['afm']
         if trn['afm'] == '':
