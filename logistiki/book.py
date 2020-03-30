@@ -363,7 +363,7 @@ class Book:
                 val['amount'] = dec2grp(val['amount'])
                 val['tax'] = dec2grp(val['tax'])
                 gexpenses.append(val)
-
+        # ΕΛΛΗΝΙΚΟ format ΑΡΙΘΜΩΝ
         # Εγγραφές χωρίς έκπτωση του ΦΠΑ επαναφορά
         for afm, decre in sorted(di6.items()):
             for _, val in decre.items():
@@ -384,6 +384,10 @@ class Book:
             tam['amount'] = dec2grp(tam['amount'])
             tam['tax'] = dec2grp(tam['tax'])
             data['gcash'].append(tam)
+        # Μόνο όταν υπάρχουν τιμές στο oexpenses
+        if data['oexpenses']:
+            data['oexpenses']['amount'] = dec2grp(data['oexpenses']['amount'])
+            data['oexpenses']['tax'] = dec2grp(data['oexpenses']['tax'])
         return data
 
     def kartella(self, account, apo=None, eos=None):
