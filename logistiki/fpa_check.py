@@ -1,7 +1,7 @@
+import os
 from logistiki import parsers as prs
 from logistiki.udec import dec
 from configparser import ConfigParser
-import argparse
 
 
 def fpa_errors(tran, acc_fpa, threshold):
@@ -23,6 +23,17 @@ def fpa_errors(tran, acc_fpa, threshold):
     return False
 
 
+def default_files(base_path):
+    dfiles = {}
+    dfiles['geniko_imerologio'] = os.path.join(base_path, 'el.txt')
+    dfiles['esoda_ejoda'] = os.path.join(base_path, 'ee.txt')
+    dfiles['afms'] = os.path.join(base_path, 'afm.txt')
+    for fil in dfiles.values():
+        if not os.path.exists(fil):
+            raise FileNotFoundError
+    return dfiles
+
+
 def main(ini_file='logistiki.ini', threshold=0.01):
     cfg = ConfigParser()
     cfg.read(ini_file)
@@ -36,8 +47,10 @@ def main(ini_file='logistiki.ini', threshold=0.01):
         for val in vals:
             acc_fpa[val] = dec(fpa)
     # print(acc_fpa)
-    book = prs.parse_all(dict(cfg['company']), dict(cfg['parse']))
+    fdic = default_files(cfg['parse']['file_path'])
+    book = prs.parse_all(dict(cfg['company']), fdic)
     errors = []
+
     for trn in book.transactions:
         if not trn['is_ee']:
             continue
@@ -48,7 +61,8 @@ def main(ini_file='logistiki.ini', threshold=0.01):
         print('Δεν υπάρχουν λάθη στο ΦΠΑ')
     else:
         print(f'Βρέθηκαν τα παρακάτω λάθη στο ΦΠΑ με όριο: {threshold}\n')
-        stt = '{date:<10} {par:<12} {per:<60} {poso:>12} {cfpa:>12} {tfpa:>12} {delta:>12}\n'
+        stt = ('{date:<10} {par:<12} {per:<60} {poso:>12} '
+               '{cfpa:>12} {tfpa:>12} {delta:>12}\n')
         stf = stt.format(date='Ημερομηνία', par='Παραστατικό',
                          per='Περιγραφή', poso='Ποσό', cfpa='ΦΠΑ σωστό',
                          tfpa='ΦΠΑ Βιβλίων', delta='Διαφορά')

@@ -45,6 +45,10 @@ def parse_imerologio(fil: str, encoding='WINDOWS-1253') -> tuple:
                 continue
             elif lin.startswith(EXC):  # Exclude lines
                 continue
+            elif llin < 132:  # Πρόκειται για γραμμή περιγραφής
+                pe2 = lin[SPE2].strip()
+                per = lin[SPER].strip()
+                dper[tno] = {'perigrafi': per, 'lineperigrafi': pe2}
             elif lin[50] == '.' and lin[53] == '.' and lin[134] == ',':
                 if lin[4] == '/' and lin[7] == '/':
                     tno += 1
@@ -71,10 +75,6 @@ def parse_imerologio(fil: str, encoding='WINDOWS-1253') -> tuple:
                 trad[lno] = {'id': tno, 'code': lmo,
                              'debit': xre, 'credit': pis}
                 arthra[tno].append(lno)
-            elif llin < 132:  # Πρόκειται για γραμμή περιγραφής
-                pe2 = lin[SPE2].strip()
-                per = lin[SPER].strip()
-                dper[tno] = {'perigrafi': per, 'lineperigrafi': pe2}
             else:
                 unparsed_lines[i] = lin
     if len(unparsed_lines) > 0:
