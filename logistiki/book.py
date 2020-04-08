@@ -132,6 +132,9 @@ class Book:
         return tmp
 
     def totals_for_fpa(self, apo, eos):
+        """
+        Ισοζύγιο ειδικά για τον υπολογισμό του ΦΠΑ
+        """
         dapo = apo if apo else '1900-01-01'
         deos = eos if eos else '3000-12-31'
         if dapo > deos:

@@ -40,6 +40,7 @@ def parse_imerologio(fil: str, encoding='WINDOWS-1253') -> tuple:
     with open(fil, encoding=encoding) as ofil:
         for i, lin in enumerate(ofil):
             llin = len(lin)  # Το υπολογίζω εδώ μία φορά
+            # print(lin)
             if llin < 48:  # Δεν έχουν νόημα γραμμές μικρότερες του 48
                 continue
             elif lin.startswith(EXC):  # Exclude lines
