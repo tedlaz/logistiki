@@ -23,17 +23,6 @@ def fpa_errors(tran, acc_fpa, threshold):
     return False
 
 
-def default_files(base_path):
-    dfiles = {}
-    dfiles['geniko_imerologio'] = os.path.join(base_path, 'el.txt')
-    dfiles['esoda_ejoda'] = os.path.join(base_path, 'ee.txt')
-    dfiles['afms'] = os.path.join(base_path, 'afm.txt')
-    for fil in dfiles.values():
-        if not os.path.exists(fil):
-            raise FileNotFoundError
-    return dfiles
-
-
 def main(ini_file='logistiki.ini', threshold=0.01):
     cfg = ConfigParser()
     cfg.read(ini_file)
@@ -47,8 +36,8 @@ def main(ini_file='logistiki.ini', threshold=0.01):
         for val in vals:
             acc_fpa[val] = dec(fpa)
     # print(acc_fpa)
-    fdic = default_files(cfg['parse']['file_path'])
-    book = prs.parse_all(dict(cfg['company']), fdic)
+
+    book = prs.parse_all(dict(cfg['company']), cfg['parse']['file_path'])
     errors = []
 
     for trn in book.transactions:

@@ -1,3 +1,4 @@
+import os
 from collections import defaultdict
 from logistiki.logger import logger
 from logistiki.udec import dec, gr2dec, is_afm
@@ -251,14 +252,22 @@ def parse_afm(fil, enc='WINDOWS-1253'):
     return by_code
 
 
-def parse_all(co_data: dict, parsefiles: dict) -> Book:
+def files_from_path(filepath):
+    file_afm = os.path.join(filepath, 'afm.txt')
+    file_el = os.path.join(filepath, 'el.txt')
+    file_ee = os.path.join(filepath, 'ee.txt')
+    return (file_afm, file_ee, file_el)
+
+
+def parse_all(co_data: dict, file_path: str) -> Book:
     """
     Τρέχουν όλοι οι parsers και παίρνουμε σαν έξοδο ένα βιβλίο λογιστικής
     """
-
-    afms = parse_afm(parsefiles['afms'])
-    eelines, eetypes = parse_esex(parsefiles['esoda_ejoda'])
-    transactions, accounts = parse_imerologio(parsefiles['geniko_imerologio'])
+    file_afm, file_ee, file_el = files_from_path(file_path)
+    # print(file_afm, file_ee, file_el)
+    afms = parse_afm(file_afm)
+    eelines, eetypes = parse_esex(file_ee)
+    transactions, accounts = parse_imerologio(file_el)
     for trn in transactions:
         trn['afm'] = eelines[trn['date']][trn['parno']]['afm']
         if trn['afm'] == '':

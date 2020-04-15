@@ -132,3 +132,5 @@ dmypy.json
 validated_afms.txt
 zzz_afms_to_validate.txt
 .vscode/
+zeep/
+

@@ -28,7 +28,7 @@ def main(apo, eos, outfile=None, ini_file='logistiki.ini'):
     codata['apo'] = date_iso2gr(apo)
     codata['eos'] = date_iso2gr(eos)
     # Εδώ φορτώνουμε τα δεδομένα στο βιβλίο
-    book = prs.parse_all(dict(cfg['company']), dict(cfg['parse']))
+    book = prs.parse_all(dict(cfg['company']), cfg['parse']['file_path'])
     isozygio = book.totals_for_fpa(apo, eos)
     fdata = {}
     fpad = {}
@@ -55,6 +55,7 @@ if __name__ == '__main__':
     pars.add_argument('-f', '--From', help='Από ημερομηνία')
     pars.add_argument('-t', '--To', help='Έως ημερομηνία')
     pars.add_argument('-o', '--Outfile', help='Αρχείο για αποθήκευση')
+    pars.add_argument('-i', '--Inifile', help='Όνομα αρχείου ini')
     pars.add_argument('--version', action='version', version='1.0')
     arg = pars.parse_args()
     main(arg.From, arg.To, arg.Outfile)

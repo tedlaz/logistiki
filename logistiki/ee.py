@@ -7,7 +7,7 @@ import argparse
 def main(exclude, only, ini_file='logistiki.ini'):
     cfg = ConfigParser()
     cfg.read(ini_file)
-    book = prs.parse_all(dict(cfg['company']), dict(cfg['parse']))
+    book = prs.parse_all(dict(cfg['company']), cfg['parse']['file_path'])
     book.ee_book_report(exclude=exclude, only=only)
 
 
