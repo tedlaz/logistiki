@@ -1,6 +1,5 @@
 from logistiki.f2_render import f2_render
-from logistiki.udec import dec
-from logistiki.ugrdate import date_iso2gr
+from logistiki.utils import dec, date_iso2gr
 from logistiki import parsers as prs
 from configparser import ConfigParser
 import argparse

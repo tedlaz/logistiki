@@ -1,6 +1,6 @@
 import argparse
 from zeep import Client  # pip install zeep
-from logistiki.udec import is_afm
+from logistiki.utils import is_afm
 
 URL = "http://ec.europa.eu/taxation_customs/vies/checkVatService.wsdl"
 

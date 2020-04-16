@@ -1,4 +1,3 @@
-# from logistiki.myf2xml import create_xml
 from configparser import ConfigParser
 from logistiki import parsers as prs
 import argparse

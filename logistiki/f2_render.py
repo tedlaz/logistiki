@@ -1,4 +1,4 @@
-from logistiki.udec import dec
+from logistiki.utils import dec
 from logistiki.logger import logger
 import os
 

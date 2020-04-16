@@ -1,6 +1,6 @@
 import os
 from logistiki import parsers as prs
-from logistiki.udec import dec
+from logistiki.utils import dec
 from configparser import ConfigParser
 
 
