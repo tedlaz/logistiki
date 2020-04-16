@@ -239,8 +239,6 @@ class Book:
         print(f"Ομάδα 7      : {tot7:>12} {fpa7:>12}")
         print(f"Κέρδος 7-2-6 : {tot7-tot6-tot2:>12} {fpa7-fpa6-fpa2:>12}")
         print('=' * 40)
-        print(
-            f"Parameters(only={only}, exclude={exclude})")
 
     def myf_xml(self, exclude=None, only=None, koybas=(), rfpa=(), action='replace'):
         """

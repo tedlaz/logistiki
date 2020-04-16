@@ -14,6 +14,8 @@ def read_chart(chart_file):
     if os.path.exists(chart_file):
         with open(chart_file) as fil:
             for lin in fil.readlines():
+                if len(lin.strip()) < 3:
+                    continue
                 acc, *name = lin.split()
                 chart[acc.strip()] = ' '.join(name)
     else:

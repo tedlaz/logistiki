@@ -34,7 +34,10 @@ def main(ini_file='logistiki.ini', threshold=0.01):
         cod = int(cod)
         fpa = int(fpa)
         for val in vals:
-            acc_fpa[val] = dec(fpa)
+            if cod_fpa in ('364_24', ):
+                acc_fpa[val] = dec(0)
+            else:
+                acc_fpa[val] = dec(fpa)
     # print(acc_fpa)
 
     book = prs.parse_all(dict(cfg['company']), cfg['parse']['file_path'])

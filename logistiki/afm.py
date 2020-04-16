@@ -5,7 +5,7 @@ from logistiki.utils import is_afm
 URL = "http://ec.europa.eu/taxation_customs/vies/checkVatService.wsdl"
 
 
-def main(afm_list):
+def check_afms(afm_list):
     afm_list.sort()
     alg_pass = True
     afm_err = []
@@ -41,23 +41,3 @@ def main(afm_list):
             'Απο online έλεγχο βρέθηκαν ανενεργά ΑΦΜ και καταχωρήθηκαν '
             f'στο αρχείο: {afm_err_file}'
         )
-
-
-if __name__ == '__main__':
-    pars = argparse.ArgumentParser(description='Επιβεβαίωση ΑΦΜ online')
-    pars.add_argument('-l', '--Listafm', nargs='+',
-                      help='Λίστα με ΑΦΜ για έλεγχο')
-    pars.add_argument('-f', '--File', help='Αρχείο με ΑΦΜ για έλεγχο')
-    pars.add_argument('--version', action='version', version='1.0')
-    arg = pars.parse_args()
-    if arg.Listafm:
-        main(arg.Listafm)
-    elif arg.File:
-        afm_list = []
-        with open(arg.File) as fil:
-            for lin in fil.readlines():
-                afm_list.append(lin.strip())
-        main(afm_list)
-    else:
-        print('error')
-    # main(['094421389', '090000045', '099936189', '099951144', '094222211'])
