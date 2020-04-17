@@ -46,14 +46,3 @@ def fpa(apo, eos, outfile=None, ini_file='logistiki.ini'):
     # DATA = {361: dec(95156.97), 303: dec(101119.21), 381: dec(100.34),
     #         306: dec(28529.25), 364: dec(1825.68), 349: dec(39527.90)}
     f2_render(codata, fdata, outfile)
-
-
-if __name__ == '__main__':
-    pars = argparse.ArgumentParser(description='ΦΠΑ Περιόδου')
-    pars.add_argument('-f', '--From', help='Από ημερομηνία')
-    pars.add_argument('-t', '--To', help='Έως ημερομηνία')
-    pars.add_argument('-o', '--Outfile', help='Αρχείο για αποθήκευση')
-    pars.add_argument('-i', '--Inifile', help='Όνομα αρχείου ini')
-    pars.add_argument('--version', action='version', version='1.0')
-    arg = pars.parse_args()
-    fpa(arg.From, arg.To, arg.Outfile)

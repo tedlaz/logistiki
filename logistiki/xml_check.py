@@ -188,11 +188,3 @@ def file2txt(afile):
     except:
         pass
     return txt
-
-
-if __name__ == '__main__':
-    pars = argparse.ArgumentParser(description='Έλεγχος αρχείου ΜΥΦ xml')
-    pars.add_argument('xml_file', help='Αρχείο xml για έλεγχο')
-    pars.add_argument('--version', action='version', version='1.0')
-    arg = pars.parse_args()
-    printmyf(arg.xml_file)

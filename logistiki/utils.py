@@ -133,7 +133,3 @@ def read_chart(chart_file):
     else:
         logger.error(f'chart file {chart_file} does not exist. Check your ini')
     return chart
-
-
-if __name__ == '__main__':
-    print(startswith_any(('60.05.04', '60.06.13'), ('60.00', '60.06')))
