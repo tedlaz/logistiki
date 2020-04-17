@@ -1,6 +1,6 @@
 from unittest import TestCase
 from decimal import Decimal
-from logistiki.udec import dec, dec2gr, gr2dec
+from logistiki.utils import dec, dec2gr, gr2dec
 
 
 class TestsDec(TestCase):
