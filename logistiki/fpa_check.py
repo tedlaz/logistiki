@@ -23,9 +23,7 @@ def fpa_errors(tran, acc_fpa, threshold):
     return False
 
 
-def main(ini_file='logistiki.ini', threshold=0.01):
-    cfg = ConfigParser()
-    cfg.read(ini_file)
+def check_fpa(cfg, threshold=0.01):
     fpas = dict(cfg['fpa'])
     fpas = {el: fpas[el].split() for el in fpas}
     acc_fpa = {}
@@ -68,7 +66,3 @@ def main(ini_file='logistiki.ini', threshold=0.01):
                               poso=err['poso'], cfpa=err['cfpa'],
                               tfpa=err['tfpa'], delta=err['delta'])
         print(stf)
-
-
-if __name__ == '__main__':
-    main()

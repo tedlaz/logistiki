@@ -5,7 +5,7 @@ from configparser import ConfigParser
 import argparse
 
 
-def main(apo, eos, outfile=None, ini_file='logistiki.ini'):
+def fpa(apo, eos, outfile=None, ini_file='logistiki.ini'):
     """
     Για τον υπολογισμό του φπα χρησιμοποιούμε παραμέτρους από το αρχείο
     logistiki.ini
@@ -38,7 +38,6 @@ def main(apo, eos, outfile=None, ini_file='logistiki.ini'):
                 fdata[code] += value
                 fpad[code] = fpad.get(code, dec(0))
                 fpad[code] += dec(value * dec(fpa) / dec(100))
-                # print(code, account, value, fpa, dec(value * dec(fpa) / dec(100)))
     fdata[5400] = isozygio[5400]
     for cods in [361, 362, 363, 364, 365, 366]:
         fpa_value = fpad.get(cods, dec(0))
@@ -57,4 +56,4 @@ if __name__ == '__main__':
     pars.add_argument('-i', '--Inifile', help='Όνομα αρχείου ini')
     pars.add_argument('--version', action='version', version='1.0')
     arg = pars.parse_args()
-    main(arg.From, arg.To, arg.Outfile)
+    fpa(arg.From, arg.To, arg.Outfile)

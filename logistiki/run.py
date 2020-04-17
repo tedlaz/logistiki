@@ -2,6 +2,28 @@
 from configparser import ConfigParser
 import argparse
 import sys
+from logistiki import parsers as prs
+from logistiki.utils import read_chart
+from logistiki.myf2xml import create_xml
+
+
+def myf(cfg, out_file):
+    exclude = cfg['myf']['exclude'].split() or None
+    only = cfg['myf']['only'].split() or None
+    koybas = cfg['myf']['koybas'].split() or ()
+    rfpa = cfg['myf']['reversefpa'].split() or ()
+    book = prs.parse_all(dict(cfg['company']), cfg['parse']['file_path'])
+    # book.ee_book_report(exclude=exclude, only=only)
+    data = book.myf_xml(
+        exclude=exclude, only=only, koybas=koybas, rfpa=rfpa)
+    xml_text, afms = create_xml(data)
+    print(xml_text)
+    if out_file:
+        with open('zzz_afms_to_validate.txt', 'w') as fil:
+            fil.write('\n'.join(afms))
+        with open(out_file, 'w') as fil:
+            fil.write(xml_text)
+            print(f"Το αρχείο {out_file} δημιουργήθηκε επιτυχώς !!!")
 
 
 def main():
@@ -39,26 +61,26 @@ def main():
 
     # isozygio
     isop = subp.add_parser('isozygio', help='Ισοζύγιο λογαριασμών')
-    isop.add_argument('-f', '--from', help='Από ημερομηνία')
-    isop.add_argument('-t', '--to', help='Έως ημερομηνία')
+    isop.add_argument('-f', '--apo', help='Από ημερομηνία')
+    isop.add_argument('-t', '--eos', help='Έως ημερομηνία')
 
     # kartella
     karp = subp.add_parser('kartella', help='Καρτέλλα λογαριασμού')
     karp.add_argument('account', help='Λογαριασμός')
-    karp.add_argument('-f', '--from', help='Από ημερομηνία')
-    karp.add_argument('-t', '--to', help='Έως ημερομηνία')
+    karp.add_argument('-f', '--apo', help='Από ημερομηνία')
+    karp.add_argument('-t', '--eos', help='Έως ημερομηνία')
 
     # myf
     myfp = subp.add_parser(
         'myf',
         help='Συγκεντρωτική Πελατών/Προμηθευτών σε αρχείο xml'
     )
-    myfp.add_argument('-o', '--οut', help='Όνομα αρχείου για αποθήκευση')
+    myfp.add_argument('-o', '--out', help='Όνομα αρχείου για αποθήκευση')
 
     # fpa
     fpap = subp.add_parser('fpa', help='ΦΠΑ περιόδου')
-    fpap.add_argument('-f', '--from', help='Από ημερομηνία')
-    fpap.add_argument('-t', '--to', help='Έως ημερομηνία')
+    fpap.add_argument('-f', '--apo', help='Από ημερομηνία')
+    fpap.add_argument('-t', '--eos', help='Έως ημερομηνία')
     fpap.add_argument('-o', '--out', help='Αρχείο για αποθήκευση')
 
     # fpachk
@@ -71,8 +93,12 @@ def main():
     xmlchkp.add_argument('xml_file', help='Αρχείο xml για έλεγχο')
 
     args = parser.parse_args()
+
     if args.debug:
         print("debug: " + str(args))
+
+    cfg = ConfigParser()
+    cfg.read(args.inifile)
 
     if args.command == 'afm':
         from logistiki.afm import check_afms
@@ -84,27 +110,42 @@ def main():
                 for lin in fil.readlines():
                     afm_list.append(lin.strip())
             check_afms(afm_list)
+
     elif args.command == 'ee':
-        from logistiki import parsers as prs
-        cfg = ConfigParser()
-        cfg.read(args.inifile)
         book = prs.parse_all(dict(cfg['company']), cfg['parse']['file_path'])
         book.ee_book_report(exclude=args.exclude, only=args.only)
         pass
+
     elif args.command == 'imerologio':
-        pass
+        book = prs.parse_all(dict(cfg['company']), cfg['parse']['file_path'])
+        for trn in book.transactions:
+            book.trans_print(trn['id'])
+
     elif args.command == 'isozygio':
-        pass
+        book = prs.parse_all(dict(cfg['company']), cfg['parse']['file_path'])
+        fchart = cfg['accounts']['chart']
+        chart = read_chart(fchart)
+        print(book.isozygio(apo=args.apo, eos=args.eos, chart=chart))
+
     elif args.command == 'kartella':
-        pass
+        book = prs.parse_all(dict(cfg['company']), cfg['parse']['file_path'])
+        print(book.kartella(args.account, apo=args.apo, eos=args.eos))
+
     elif args.command == 'myf':
-        pass
+        myf(cfg, args.out)
+
     elif args.command == 'fpa':
-        pass
+        from logistiki.fpa import fpa
+        fpa(args.apo, args.eos, args.out)
+
     elif args.command == 'fpachk':
-        pass
+        from logistiki.fpa_check import check_fpa
+        check_fpa(cfg)
+
     elif args.command == 'xmlchk':
-        pass
+        from logistiki.xml_check import printmyf
+        printmyf(args.xml_file)
+
     else:
         parser.print_help()
 

@@ -1,4 +1,6 @@
 from decimal import Decimal, ROUND_HALF_UP
+import os
+from logistiki.logger import logger
 ACCOUNT_SPLITTER = '.'
 
 
@@ -113,6 +115,24 @@ def levels_reverse(account: str) -> tuple:
     lvls = [account[0]] + lvls
     lvls.reverse()
     return tuple(lvls)
+
+
+def read_chart(chart_file):
+    """
+    Δημιουργεί dictionary με τους ανωτεροβάθμιους λογαριασμούς του
+    λογιστικού σχεδίου της μορφής : {'38.00': 'Ταμείο', ...}
+    """
+    chart = {}
+    if os.path.exists(chart_file):
+        with open(chart_file) as fil:
+            for lin in fil.readlines():
+                if len(lin.strip()) < 3:
+                    continue
+                acc, *name = lin.split()
+                chart[acc.strip()] = ' '.join(name)
+    else:
+        logger.error(f'chart file {chart_file} does not exist. Check your ini')
+    return chart
 
 
 if __name__ == '__main__':
