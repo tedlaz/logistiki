@@ -258,6 +258,16 @@ def files_from_path(filepath):
     return (file_afm, file_ee, file_el)
 
 
+def parse_varius(ee_file, enc='WINDOWS-1253'):
+    fil = open(ee_file, encoding=enc)
+    title = next(fil).split('-')[0].strip()
+    next(fil)
+    lindat = next(fil)
+    apo, eos, etos = lindat[85:95], lindat[113:123], lindat[91:95]
+    print(title, apo, eos, etos)
+    fil.close()
+
+
 def parse_all(co_data: dict, file_path: str) -> Book:
     """
     Τρέχουν όλοι οι parsers και παίρνουμε σαν έξοδο ένα βιβλίο λογιστικής
