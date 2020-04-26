@@ -155,7 +155,7 @@ class Dialog(qw.QWidget):
     def refresh_model(self, lmos):
         self.model_lmos = Dmodel(self.book.kartella_model(lmos))
         self.tbl.setModel(self.model_lmos)
-        self.tbl.setColumnWidth(0, 80)
+        self.tbl.setColumnWidth(0, 90)
         self.tbl.setColumnWidth(1, 80)
         self.tbl.setColumnWidth(2, 400)
         self.tbl.setColumnWidth(3, 80)
