@@ -1,7 +1,9 @@
-from qlogistiki.utils import dec
+from collections import namedtuple
+from qlogistiki.utils import dec, gr_num
 
 DEBIT, CREDIT = 1, 2
 decr = {1: 'Χρέωση', 2: 'Πίστωση'}
+Trl = namedtuple('Trl', 'date par per afm acc typos val')
 
 
 class TransactionLine:
@@ -22,23 +24,40 @@ class TransactionLine:
                 self.typos = CREDIT
             self.value = -self.value
 
+    @classmethod
+    def new_from_delta(cls, account, delta):
+        return cls(account, 1, delta)
+
     @property
     def debit(self):
         if self.typos == 1:
             return self.value
-        return 0
+        return dec(0)
 
     @property
     def credit(self):
         if self.typos == 2:
             return self.value
-        return 0
+        return dec(0)
 
     @property
     def delta(self):
         if self.typos == 1:
             return self.value
         return -self.value
+
+    def __eq__(self, other):
+        return self.delta == other.delta
+
+    def __lt__(self, other):
+        return self.delta < other.delta
+
+    def __add__(self, other):
+        if self.account != other.account:
+            raise ValueError('For addition accounts must me the same')
+        return TransactionLine.new_from_delta(
+            self.account, self.delta + other.delta
+        )
 
     def __repr__(self):
         return (
@@ -51,7 +70,11 @@ class TransactionLine:
 
 
 class Transaction:
+    cid = 0
+
     def __init__(self, date: str, parastatiko: str, perigrafi: str, afm=''):
+        self.__class__.cid += 1
+        self.id = self.cid
         self.date = date
         self.parastatiko = parastatiko
         self.perigrafi = perigrafi
@@ -59,6 +82,21 @@ class Transaction:
         self.delta = dec(0)
         self.lines = []
         self.fpa_status = 0  # 0: Χωρίς ΦΠΑ, 1: ΦΠΑ οκ, 2: ΦΠΑ λάθος
+
+    def lines_full(self):
+        full_lines = [
+            Trl(self.date, self.parastatiko, self.perigrafi,
+                self.afm, l.account, l.typos, l.value) for l in self.lines
+        ]
+        return full_lines
+
+    @property
+    def uid(self) -> str:
+        date_part = self.date.replace('-', '')
+        afm_part = self.afm  # or '000000000'
+        parastatiko_part = self.parastatiko.replace(' ', '')
+        val_part = str(self.total).replace('.', '')
+        return f'{date_part}{afm_part}{parastatiko_part}{val_part}'
 
     @property
     def number_of_lines(self) -> int:
@@ -71,6 +109,10 @@ class Transaction:
         if self.delta == 0:
             return True
         return False
+
+    @property
+    def total(self):
+        return sum(l.debit for l in self.lines)
 
     def add_line(self, account: str, typos: int, value):
         new_line = TransactionLine(account, typos, value)
@@ -121,8 +163,26 @@ class Transaction:
             ")"
         )
 
+    def as_str(self):
+        stt = f'{self.date} "{self.parastatiko}" "{self.perigrafi}" {self.afm}\n'
+        for i, lin in enumerate(self.lines):
+            if self.number_of_lines == i + 1:
+                stt += f'  {lin.account}\n'
+            else:
+                tlin = f'  {lin.account:<40} {gr_num(lin.delta):>14}'
+                stt += tlin.rstrip() + '\n'
+        return stt
+
+    def __str__(self) -> str:
+        ast = f'\n{self.date} {self.parastatiko} {self.perigrafi} {self.afm}\n'
+        for lin in self.lines:
+            ast += f'{lin.account:<40}{lin.debit:>14}{lin.credit:>14}\n'
+        return ast
+
     def __eq__(self, oth):
         return self.date == oth.date and self.parastatiko == oth.parastatiko
 
     def __lt__(self, oth):
-        self.date < oth.date
+        if self.date == oth.date:
+            return self.total < oth.total
+        return self.date < oth.date

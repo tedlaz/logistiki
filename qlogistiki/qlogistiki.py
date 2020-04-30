@@ -24,21 +24,22 @@ class Dmodel(qc.QAbstractTableModel):
 
     def __init__(self, model_data, parent=None):
         super().__init__(parent)
-        self.headers, self.vals, self.align, self.typos = model_data
+        self.mdata = model_data
 
     def set_data(self, model_data):
-        self.headers, self.vals, self.align, self.typos = model_data
+        self.mdata = model_data
+        # self.headers, self.vals, self.align, self.typos, self.siz = model_data
 
     def rowCount(self, parent):
-        return len(self.vals)
+        return len(self.mdata.values)
 
     def columnCount(self, parent):
-        return len(self.headers)
+        return len(self.mdata.headers)
 
     def headerData(self, section, orientation, role):
         if role == qc.Qt.DisplayRole:
             if orientation == qc.Qt.Horizontal:
-                return self.headers[section]
+                return self.mdata.headers[section]
             else:
                 pass
                 # return section + 1
@@ -52,16 +53,16 @@ class Dmodel(qc.QAbstractTableModel):
         if not index.isValid():
             return None
         if role == qc.Qt.DisplayRole:
-            if self.typos[index.column()] == 1:
-                return dec2gr(self.vals[index.row()][index.column()])
+            if self.mdata.types[index.column()] == 1:
+                return dec2gr(self.mdata.values[index.row()][index.column()])
             else:
-                return self.vals[index.row()][index.column()]
+                return self.mdata.values[index.row()][index.column()]
         if role == qc.Qt.TextAlignmentRole:
-            if self.align[index.column()] == 1:
+            if self.mdata.aligns[index.column()] == 1:
                 return qc.Qt.AlignLeft
-            elif self.align[index.column()] == 2:
+            elif self.mdata.aligns[index.column()] == 2:
                 return qc.Qt.AlignCenter
-            elif self.align[index.column()] == 3:
+            elif self.mdata.aligns[index.column()] == 3:
                 return qc.Qt.AlignRight
 
 
@@ -155,12 +156,8 @@ class Dialog(qw.QWidget):
     def refresh_model(self, lmos):
         self.model_lmos = Dmodel(self.book.kartella_model(lmos))
         self.tbl.setModel(self.model_lmos)
-        self.tbl.setColumnWidth(0, 90)
-        self.tbl.setColumnWidth(1, 80)
-        self.tbl.setColumnWidth(2, 400)
-        self.tbl.setColumnWidth(3, 80)
-        self.tbl.setColumnWidth(4, 80)
-        self.tbl.setColumnWidth(5, 80)
+        for i, size in enumerate(self.model_lmos.mdata.sizes):
+            self.tbl.setColumnWidth(i, size)
         self.tbl.resizeRowsToContents()
         self.lbl.setText(f"{lmos}")
 

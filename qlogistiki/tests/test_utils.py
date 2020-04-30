@@ -1,0 +1,63 @@
+from unittest import TestCase
+from qlogistiki import utils as utl
+from qlogistiki.utils import Dec
+
+
+class TestUtils(TestCase):
+    def test_gr_num(self):
+        self.assertEqual(utl.gr_num(1010.34), '1.010,34')
+        self.assertEqual(utl.gr_num(0), '0   ')
+        self.assertEqual(utl.gr_num(123123.50), '123.123,5 ')
+        self.assertEqual(utl.gr_num(-123123.50), '-123.123,5 ')
+        self.assertEqual(utl.gr_num(.01), '0,01')
+        self.assertEqual(utl.gr_num(-.01), '-0,01')
+        self.assertEqual(utl.gr_num(.10), '0,1 ')
+        self.assertEqual(utl.gr_num(-82.00), '-82   ')
+        self.assertEqual(utl.gr_num('rt'), '0   ')
+        self.assertEqual(utl.gr_num(None), '0   ')
+
+    def test_account_tree(self):
+        self.assertEqual(utl.account_tree('a.b.c'), ('a', 'a.b', 'a.b.c'))
+        self.assertEqual(utl.account_tree('a'), ('a',))
+        self.assertEqual(utl.account_tree(''), ('',))
+        self.assertEqual(utl.account_tree(1), ('',))
+        self.assertEqual(utl.account_tree('a.b', True), ('a.b', 'a'))
+
+    def test_Dec(self):
+        a = Dec(1000)
+        b = Dec(1.5)
+        self.assertEqual(a + b, 1001.5)
+        self.assertEqual(a - b, 998.5)
+        self.assertEqual(a + 1.5, 1001.5)
+        self.assertEqual(a - 1.5, 998.5)
+        self.assertEqual(a * b, 1500)
+        self.assertEqual(a / b, 666.67)
+        self.assertEqual(a * 1.5, 1500)
+        self.assertEqual(a / 1.5, 666.67)
+        self.assertEqual(-a, -1000)
+        self.assertTrue(a != b)
+        self.assertTrue(a > b)
+        self.assertTrue(a >= b)
+        self.assertTrue(a == 1000)
+        self.assertTrue(a < 1000.01)
+        self.assertTrue(b < a)
+        self.assertTrue(b <= a)
+        self.assertTrue(b <= b)
+        self.assertEqual(Dec(0).gr, '')
+        self.assertEqual(Dec(0).gr0, '0,00')
+        self.assertEqual(Dec(0).grs, '0   ')
+        self.assertEqual(Dec(123456.78).gr, '123.456,78')
+        self.assertEqual(Dec(123456.70).gr, '123.456,70')
+        self.assertEqual(Dec(123456.00).gr, '123.456,00')
+        self.assertEqual(Dec(123456.78).gr0, '123.456,78')
+        self.assertEqual(Dec(123456.70).gr0, '123.456,70')
+        self.assertEqual(Dec(123456.00).gr0, '123.456,00')
+        self.assertEqual(Dec(123456.78).grs, '123.456,78')
+        self.assertEqual(Dec(123456.70).grs, '123.456,7 ')
+        self.assertEqual(Dec(123456.00).grs, '123.456   ')
+        self.assertTrue(Dec(1.355) == 1.36)
+        self.assertTrue(Dec(1.354) == 1.35)
+        self.assertTrue(Dec(1.595) == 1.6)
+        self.assertTrue(Dec(1.601) == 1.6)
+        self.assertTrue(Dec(1.604) == 1.6)
+        self.assertTrue(Dec(1.605) == 1.61)
