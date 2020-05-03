@@ -6,9 +6,50 @@ decr = {1: 'Χρέωση', 2: 'Πίστωση'}
 Trl = namedtuple('Trl', 'date par per afm acc typos val')
 
 
+class AccountList(list):
+    @property
+    def names(self):
+        return [a.name for a in self]
+
+    @property
+    def full_tree(self):
+        stree = set()
+        for account in self:
+            for lmo in account.tree:
+                stree.add(lmo)
+        ltree = list(stree)
+        ltree.sort()
+        return ltree
+
+
+class Account():
+    splitter = '.'
+    account_list = AccountList()
+
+    def __init__(self, name):
+        self.name = name
+        if self.name not in self.account_list.names:
+            Account.account_list.append(self)
+
+    @property
+    def tree(self):
+        spl = self.name.split(self.splitter)
+        lvls = [self.splitter.join(spl[: i + 1]) for i, _ in enumerate(spl)]
+        return lvls
+
+    @property
+    def tree_reversed(self):
+        lvls = self.tree
+        lvls.reverse()
+        return lvls
+
+    def __repr__(self):
+        return f'Account(name={self.name!r})'
+
+
 class TransactionLine:
     def __init__(self, account, typos, value):
-        self.account = account
+        self.account = Account(account)
         if typos <= 1:
             self.typos = 1
         else:
@@ -26,7 +67,7 @@ class TransactionLine:
 
     @classmethod
     def new_from_delta(cls, account, delta):
-        return cls(account, 1, delta)
+        return cls(Account(account), 1, delta)
 
     @property
     def debit(self):
@@ -53,10 +94,10 @@ class TransactionLine:
         return self.delta < other.delta
 
     def __add__(self, other):
-        if self.account != other.account:
+        if self.account.name != other.account.name:
             raise ValueError('For addition accounts must me the same')
         return TransactionLine.new_from_delta(
-            self.account, self.delta + other.delta
+            self.account.name, self.delta + other.delta
         )
 
     def __repr__(self):
@@ -71,6 +112,8 @@ class TransactionLine:
 
 class Transaction:
     cid = 0
+    __slots__ = ['id', 'date', 'parastatiko', 'perigrafi',
+                 'afm', 'delta', 'lines', 'fpa_status']
 
     def __init__(self, date: str, parastatiko: str, perigrafi: str, afm=''):
         self.__class__.cid += 1
@@ -176,7 +219,7 @@ class Transaction:
     def __str__(self) -> str:
         ast = f'\n{self.date} {self.parastatiko} {self.perigrafi} {self.afm}\n'
         for lin in self.lines:
-            ast += f'{lin.account:<40}{lin.debit:>14}{lin.credit:>14}\n'
+            ast += f'{lin.account.name:<40}{lin.debit:>14}{lin.credit:>14}\n'
         return ast
 
     def __eq__(self, oth):

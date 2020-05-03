@@ -73,6 +73,7 @@ class Dec:
     @property
     def grs(self):
         """Greek formated
+            0         becomes       '0   '
             123456.00 becomes '123.456   '
             123456.70 becomes '123.456,7 '
             123456.78 becomes '123.456,78'
@@ -215,3 +216,4 @@ def gr_num(number):
             coma = ' '
     finalint = ivl.replace(',', '.')
     return finalint + coma + dlist[0] + dlist[1]
+

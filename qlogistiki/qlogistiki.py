@@ -90,6 +90,7 @@ class Dialog(qw.QWidget):
 
         self.iso.setMaximumWidth(450)
         self.iso.setSelectionBehavior(qw.QAbstractItemView.SelectRows)
+        self.iso.setSelectionMode(qw.QAbstractItemView.SingleSelection)
         self.iso.setModel(Dmodel(self.book.isozygio_model()))
         self.iso.resizeColumnsToContents()
         self.iso.resizeRowsToContents()
@@ -110,6 +111,7 @@ class Dialog(qw.QWidget):
         self.tbl.setFont(font)
         self.tbl.setWordWrap(True)
         self.tbl.setAlternatingRowColors(True)
+        self.tbl.setSelectionMode(qw.QAbstractItemView.SingleSelection)
         self.setWindowTitle("Ισοζύγιο Λογαριασμών")
         if self.parent:
             self.parent.setWindowTitle(f"Ισοζύγιο Λογαριασμών ({filename})")
@@ -156,6 +158,7 @@ class Dialog(qw.QWidget):
     def refresh_model(self, lmos):
         self.model_lmos = Dmodel(self.book.kartella_model(lmos))
         self.tbl.setModel(self.model_lmos)
+        self.tbl.verticalScrollBar().setValue(0)  # reset scrollbar position
         for i, size in enumerate(self.model_lmos.mdata.sizes):
             self.tbl.setColumnWidth(i, size)
         self.tbl.resizeRowsToContents()

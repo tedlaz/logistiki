@@ -30,6 +30,7 @@ class Book:
         self.afm = afm
         self.company_name = company_name
         self.transactions = []
+        self.account_tree = []
 
     @property
     def number_of_transactions(self):
@@ -84,9 +85,9 @@ class Book:
         vals = []
         for trn in self.transactions:
             for line in trn.lines:
-                laccount = line.account
+                laccount = line.account.name
                 if trn.afm:
-                    laccount = f"{line.account}.{trn.afm}"
+                    laccount = f"{line.account.name}.{trn.afm}"
                 if laccount.startswith(account):
                     rsum += line.delta
                     if line.delta < 0:
@@ -105,7 +106,7 @@ class Book:
         total = 0
         for trn in self.transactions_filter(apo, eos):
             for line in trn.lines:
-                for acc in account_tree(line.account):
+                for acc in line.account.tree:
                     accounts[acc] = accounts.get(acc, [0, 0])
                     accounts[acc][0] += line.debit
                     accounts[acc][1] += line.credit
@@ -123,9 +124,9 @@ class Book:
         total = 0
         for trn in self.transactions_filter(apo, eos):
             for line in trn.lines:
-                laccount = line.account
+                laccount = line.account.name
                 if trn.afm:
-                    laccount = f"{line.account}.{trn.afm}"
+                    laccount = f"{line.account.name}.{trn.afm}"
                 accs = account_tree(laccount)
                 for acc in accs:
                     accounts[acc] = accounts.get(acc, [0, 0])
@@ -144,9 +145,9 @@ class Book:
         accounts = {}
         for trn in self.transactions:
             for line in trn.lines:
-                laccount = line.account
+                laccount = line.account.name
                 if trn.afm:
-                    laccount = f"{line.account}.{trn.afm}"
+                    laccount = f"{line.account.name}.{trn.afm}"
                 accs = account_tree(laccount)
                 for acc in accs:
                     accounts[acc] = accounts.get(acc, 0)
@@ -205,23 +206,23 @@ class Book:
         with open(file) as fil:
             lines = fil.read().split('\n')
         for line in lines:
-
+            rline = line.rstrip()
             # Αγνόησε τις γραμμές σχολίων
-            if line.startswith('#'):
+            if rline.startswith('#'):
                 continue
 
             # Αγνόησε τις γραμμές με μέγεθος μικρότερο από 3
-            elif len(line.strip()) < 4:
+            elif len(rline) == 0:
                 if status == LINE:
                     self.add_transaction(trn)
                 status = OUT
                 continue
 
-            elif line[:10].replace('-', '').isnumeric():  # Γραμμή Head
+            elif rline[:10].replace('-', '').isnumeric():  # Γραμμή Head
                 if status == LINE:
                     self.add_transaction(trn)
                 status = HEAD
-                dat, par, _, per, *afma = line.split('"')
+                dat, par, _, per, *afma = rline.split('"')
                 dat = dat.strip()
                 par = par.strip()
                 per = per.strip()
@@ -229,7 +230,7 @@ class Book:
                 trn = trs.Transaction(dat, par, per, afm)
             else:
                 status = LINE
-                account, *val = line.split()
+                account, *val = rline.split()
                 if account == fpa_prefix:
                     account = f'{fpa_prefix}.{trn.last_account}'
                     pfpa = Decimal(trn.last_account.split('.')[-1][3:][:-1])
@@ -244,6 +245,7 @@ class Book:
         if status == LINE:
             self.add_transaction(trn)
             status = OUT
+        self.account_tree = trs.Account.account_list.full_tree
 
     def write2file(self, filename):
         if os.path.exists(filename):
