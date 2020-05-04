@@ -95,8 +95,8 @@ class Dialog(qw.QWidget):
         self.iso.resizeColumnsToContents()
         self.iso.resizeRowsToContents()
         leftv.addWidget(self.iso)
-        bsave_ypol = qw.QPushButton("Μεταφορά υπολοίπων")
-        leftv.addWidget(bsave_ypol)
+        bvalidate = qw.QPushButton("Ελεγχος Λογαριασμών")
+        leftv.addWidget(bvalidate)
 
         self.lbl = qw.QLabel(rightv)
         self.lbl.setAlignment(qc.Qt.AlignCenter)
@@ -116,7 +116,7 @@ class Dialog(qw.QWidget):
         if self.parent:
             self.parent.setWindowTitle(f"Ισοζύγιο Λογαριασμών ({filename})")
         # Connections
-        bsave_ypol.clicked.connect(self.save_ypol)
+        bvalidate.clicked.connect(self.validate_ypoloipa)
         # self.sbar.some_acc_clicked.connect(self.refresh_model)
         self.iso.clicked.connect(self.refresh_model_from_iso)
         self.iso.activated.connect(self.refresh_model_from_iso)
@@ -129,11 +129,9 @@ class Dialog(qw.QWidget):
                                    "Εγγραφή %s" % (tran.row_dict['id']),
                                    stv.format(**tran.row_dict))
 
-    def save_ypol(self):
-        fname, _ = qw.QFileDialog.getSaveFileName(self, 'Filename', 'ypol', '')
-        if fname:
-            pass
-            # self.book.metafora_ypoloipon(date.today().isoformat(), fname)
+    def validate_ypoloipa(self):
+        msgt = '\n'.join(self.book.validate())
+        qw.QMessageBox.about(self, 'Validations', msgt)
 
     def refresh_model_from_iso(self, acc):
         """
@@ -162,7 +160,7 @@ class Dialog(qw.QWidget):
         for i, size in enumerate(self.model_lmos.mdata.sizes):
             self.tbl.setColumnWidth(i, size)
         self.tbl.resizeRowsToContents()
-        self.lbl.setText(f"{lmos}")
+        self.lbl.setText(f"{lmos} (lifo 200)")
 
 
 class MainWindow(qw.QMainWindow):

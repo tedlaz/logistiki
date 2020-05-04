@@ -1,10 +1,11 @@
-# from collections import defaultdict
+from collections import namedtuple
 import os
 from decimal import Decimal
 import qlogistiki.transaction as trs
-from qlogistiki.utils import gr2strdec, account_tree
+from qlogistiki.utils import gr2strdec, account_tree, gr2dec
 OUT, HEAD, LINE = 0, 1, 2
 fpa_prefix = 'ΦΠΑ'
+ValPoint = namedtuple('ValPoint', 'date account delta')
 
 
 class ModelValues:
@@ -31,6 +32,20 @@ class Book:
         self.company_name = company_name
         self.transactions = []
         self.account_tree = []
+        self.validations = []
+
+    def validate(self):
+        chk = []
+        for vpoint in self.validations:
+            ypol = self.ypoloipo(vpoint.account, vpoint.date)
+            diafora = ypol - vpoint.delta
+            if diafora == 0:
+                chk.append(
+                    f'{vpoint.date}:{vpoint.account}: ✓')
+            else:
+                chk.append(
+                    f'{vpoint.date}: {vpoint.account:30} {ypol:>14}-> {diafora}')
+        return chk
 
     @property
     def number_of_transactions(self):
@@ -100,6 +115,14 @@ class Book:
                                  trn.perigrafi, xre, pis, rsum])
         vals.reverse()
         return ModelValues(headers, align, typos, sizes, vals)
+
+    def ypoloipo(self, account, eos=None):
+        ypol = 0
+        for trn in self.transactions_filter(None, eos):
+            for line in trn.lines:
+                if line.account.name.startswith(account):
+                    ypol += line.delta
+        return ypol
 
     def isozygio(self, apo=None, eos=None):
         accounts = {}
@@ -200,51 +223,53 @@ class Book:
         pass
 
     def parse(self, file):
-        status = OUT
         trn = None
         lines = []
+
         with open(file) as fil:
             lines = fil.read().split('\n')
+
         for line in lines:
             rline = line.rstrip()
-            # Αγνόησε τις γραμμές σχολίων
-            if rline.startswith('#'):
+
+            # Αγνόησε τις κενές γραμμές
+            if len(rline) == 0:
                 continue
 
-            # Αγνόησε τις γραμμές με μέγεθος μικρότερο από 3
-            elif len(rline) == 0:
-                if status == LINE:
-                    self.add_transaction(trn)
-                status = OUT
+            # Αγνόησε τις γραμμές σχολίων
+            elif rline.startswith('#'):
                 continue
+
+            # Γραμμή επιβεβαίωσης υπολοίπου
+            elif rline.startswith(('@')):
+                # @ 2020-05-10 Αγορές.Εμπορευμάτων.εσωτερικού -120,32
+                _, cdat, cacc, cval = rline.split()
+                self.validations.append(ValPoint(cdat, cacc, gr2dec(cval)))
 
             elif rline[:10].replace('-', '').isnumeric():  # Γραμμή Head
-                if status == LINE:
-                    self.add_transaction(trn)
-                status = HEAD
+                # if status == LINE:
+                #     self.add_transaction(trn)
                 dat, par, _, per, *afma = rline.split('"')
                 dat = dat.strip()
                 par = par.strip()
                 per = per.strip()
                 afm = afma[0].strip() if afma else ''
                 trn = trs.Transaction(dat, par, per, afm)
+                self.add_transaction(trn)
             else:
-                status = LINE
                 account, *val = rline.split()
                 if account == fpa_prefix:
                     account = f'{fpa_prefix}.{trn.last_account}'
                     pfpa = Decimal(trn.last_account.split('.')[-1][3:][:-1])
                     calfpa = trn.last_delta * pfpa / Decimal(100)
                     trn.fpa_status = 1
+                    # check fpa here
                     if abs(Decimal(gr2strdec(val[0])) - calfpa) > 0.01:
                         trn.fpa_status = 2
                 if val:
                     trn.add_line_delta(account, gr2strdec(val[0]))
                 else:
                     trn.add_last_line(account)
-        if status == LINE:
-            self.add_transaction(trn)
-            status = OUT
         self.account_tree = trs.Account.account_list.full_tree
 
     def write2file(self, filename):

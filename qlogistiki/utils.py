@@ -191,6 +191,13 @@ def gr2strdec(greek_number: str) -> str:
     return greek_number.replace('.', '').replace(',', '.')
 
 
+def gr2dec(greek_number: str) -> str:
+    """
+    Greek number to text decimal
+    """
+    return dec(gr2strdec(greek_number))
+
+
 def account_tree(account: str, reversed=False, splitter='.') -> tuple:
     try:
         spl = account.split(splitter)
@@ -216,4 +223,3 @@ def gr_num(number):
             coma = ' '
     finalint = ivl.replace(',', '.')
     return finalint + coma + dlist[0] + dlist[1]
-
