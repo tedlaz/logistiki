@@ -2,7 +2,7 @@
 Parse old minoracc files
 """
 from decimal import Decimal
-from utils import fix_account
+from qlogistiki.utils import fix_account
 
 
 def parser_minoracc(filename):

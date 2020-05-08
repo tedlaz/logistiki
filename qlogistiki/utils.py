@@ -191,7 +191,7 @@ def gr2strdec(greek_number: str) -> str:
     return greek_number.replace('.', '').replace(',', '.')
 
 
-def gr2dec(greek_number: str) -> str:
+def gr2dec(greek_number: str) -> Decimal:
     """
     Greek number to text decimal
     """
@@ -223,3 +223,9 @@ def gr_num(number):
             coma = ' '
     finalint = ivl.replace(',', '.')
     return finalint + coma + dlist[0] + dlist[1]
+
+
+def dec2gr(anum):
+    if anum == 0:
+        return ''
+    return f'{anum:,.2f}'.replace(',', '|').replace('.', ',').replace('|', '.')

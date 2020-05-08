@@ -1,8 +1,12 @@
-from collections import namedtuple
+from collections import namedtuple, defaultdict
+from decimal import Decimal
 from qlogistiki.utils import dec, gr_num
 
 DEBIT, CREDIT = 1, 2
 decr = {1: 'Χρέωση', 2: 'Πίστωση'}
+# 0: Χωρίς ΦΠΑ, 1: ΦΠΑ οκ, 2: ΦΠΑ λάθος
+NOFPA, FPAOK, FPAERROR = 0, 1, 2
+fpastatus = {0: 'Χωρίς ΦΠΑ', 1: 'ΦΠΑ οκ', 2: 'ΦΠΑ λάθος'}
 Trl = namedtuple('Trl', 'date par per afm acc typos val')
 
 
@@ -24,12 +28,14 @@ class AccountList(list):
 
 class Account():
     splitter = '.'
-    account_list = AccountList()
+    # account_list = AccountList()
+    # account_dict = defaultdict(Decimal)
+    __slots__ = ['name', ]
 
     def __init__(self, name):
         self.name = name
-        if self.name not in self.account_list.names:
-            Account.account_list.append(self)
+        # if self.name not in self.account_list.names:
+        #     Account.account_list.append(self)
 
     @property
     def tree(self):
@@ -48,6 +54,8 @@ class Account():
 
 
 class TransactionLine:
+    __slots__ = ['account', 'typos', 'value']
+
     def __init__(self, account, typos, value):
         self.account = Account(account)
         if typos <= 1:
@@ -56,6 +64,7 @@ class TransactionLine:
             self.typos = 2
         self.value = dec(value)
         self.normalize()
+        # Account.account_dict[account] += self.delta
 
     def normalize(self):
         if self.value < 0:
@@ -183,9 +192,9 @@ class Transaction:
         self.lines.append(new_line)
 
     @property
-    def last_account(self):
+    def last_account(self) -> Account:
         if self.number_of_lines == 0:
-            return ''
+            raise ValueError('Impossible value')
         return self.lines[-1].account
 
     @property
@@ -202,6 +211,7 @@ class Transaction:
             f"parastatiko={self.parastatiko!r}, "
             f"perigrafi={self.perigrafi!r}, "
             f"afm={self.afm!r}, "
+            f"fpa_status={fpastatus[self.fpa_status]!r}, "
             f"lines=[{lins}]"
             ")"
         )
@@ -210,9 +220,9 @@ class Transaction:
         stt = f'{self.date} "{self.parastatiko}" "{self.perigrafi}" {self.afm}\n'
         for i, lin in enumerate(self.lines):
             if self.number_of_lines == i + 1:
-                stt += f'  {lin.account}\n'
+                stt += f'  {lin.account.name}\n'
             else:
-                tlin = f'  {lin.account:<40} {gr_num(lin.delta):>14}'
+                tlin = f'  {lin.account.name:<40} {gr_num(lin.delta):>14}'
                 stt += tlin.rstrip() + '\n'
         return stt
 

@@ -1,4 +1,5 @@
 from unittest import TestCase
+
 import qlogistiki.transaction as trn
 
 

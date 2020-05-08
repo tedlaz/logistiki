@@ -1,16 +1,14 @@
-import sys
 import os
-from PyQt5 import QtCore as qc
-from PyQt5 import QtWidgets as qw
-from PyQt5 import QtGui as qg
+import sys
 from datetime import date
+
+from PyQt5 import QtCore as qc
+from PyQt5 import QtGui as qg
+from PyQt5 import QtWidgets as qw
+
 from qlogistiki.book import Book
-
-
-def dec2gr(anum):
-    if anum == 0:
-        return ''
-    return f'{anum:,.2f}'.replace(',', '|').replace('.', ',').replace('|', '.')
+from qlogistiki.parser_text import parse
+from qlogistiki.utils import dec2gr
 
 
 class Dmodel(qc.QAbstractTableModel):
@@ -72,7 +70,7 @@ class Dialog(qw.QWidget):
         self.parent = parent
         self.book = Book('', '')
         if os.path.isfile(filename):
-            self.book.parse(filename)
+            self.book = Book.from_parsed(*parse(filename))
         mainlayout = qw.QVBoxLayout()
         self.setLayout(mainlayout)
         hlayout = qw.QHBoxLayout()
@@ -122,16 +120,12 @@ class Dialog(qw.QWidget):
         self.iso.activated.connect(self.refresh_model_from_iso)
         # self.tbl.doubleClicked.connect(self.model_rowdata)
 
-    def model_rowdata(self, idx):
-        tran = self.book.trans[self.model_lmos.vals[idx.row()][0]-1]
-        stv = "Ημερομηνία: {dat}\nΑπό : {apo}\nΣε  : {se}\nΠοσό: {val}\nΠεριγραφή: {per}"
-        qw.QMessageBox.information(self,
-                                   "Εγγραφή %s" % (tran.row_dict['id']),
-                                   stv.format(**tran.row_dict))
-
     def validate_ypoloipa(self):
-        msgt = '\n'.join(self.book.validate())
-        qw.QMessageBox.about(self, 'Validations', msgt)
+        correct_no, err = self.book.validate()
+        errm = '\n'.join(err)
+        message = f'Number of correct checks: {correct_no}\n'
+        message += f'Errors:\n{errm}'
+        qw.QMessageBox.about(self, 'Validations', message)
 
     def refresh_model_from_iso(self, acc):
         """

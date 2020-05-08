@@ -7,9 +7,8 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 
 class TestBoon(unittest.TestCase):
     def test_001(self):
-        fil = "/run/user/1000/gvfs/smb-share:server=trancend-red,share=sda1/documents/ted-data/tedata"
         b01 = Book('111222333', 'TestCo')
-        bfile = os.path.join(dir_path, 'spiros.txt')
+        bfile = os.path.join(dir_path, 'booktst.txt')
         # bfile = os.path.join(dir_path, fil)
         # b01.parse(bfile)
         # b01.isozygio_afm()

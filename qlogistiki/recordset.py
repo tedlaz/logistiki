@@ -2,6 +2,14 @@
 import sqlite3
 
 
+class Test:
+    def __init__(self, val1, val2) -> None:
+        self.s = self.met1(val1, val2)
+
+    def met1(self, val1, val2):
+        return val1 + val2
+
+
 class Recordset:
     def __init__(self, headers, column_types, column_aligment, typ, data=None):
         self.headers = headers

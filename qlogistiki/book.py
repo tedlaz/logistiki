@@ -1,4 +1,5 @@
 from collections import namedtuple
+from dataclasses import dataclass
 import os
 from decimal import Decimal
 import qlogistiki.transaction as trs
@@ -8,22 +9,20 @@ fpa_prefix = 'ΦΠΑ'
 ValPoint = namedtuple('ValPoint', 'date account delta')
 
 
+@dataclass
 class ModelValues:
-    """Use it to pass values to qt models"""
-
-    def __init__(self, headers, aligns, types, sizes, values):
-        """
-        heades : headers for fields
-        aligns : aligment for fields (1=left, 2=center, 3=right)
-        types  : types for fields (0=text, 1=numeric)
-        sizes  : gird width for fields
-        values : list of records
-        """
-        self.headers = headers
-        self.aligns = aligns
-        self.types = types
-        self.sizes = sizes
-        self.values = values
+    """Use it to pass values to qt models
+    headers : headers for fields
+    aligns  : aligment for fields (1=left, 2=center, 3=right)
+    types   : types for fields (0=text, 1=numeric)
+    sizes   : gird width for fields
+    values  : list of records
+    """
+    headers: list
+    aligns: list
+    types: list
+    sizes: list
+    values: list
 
 
 class Book:
@@ -31,21 +30,30 @@ class Book:
         self.afm = afm
         self.company_name = company_name
         self.transactions = []
-        self.account_tree = []
+        # self.account_tree = []
         self.validations = []
+        self.accounts = []
+
+    @classmethod
+    def from_parsed(cls, afm, company, trans, vals, accounts):
+        new_book = cls(afm, company)
+        new_book.transactions = trans
+        new_book.validations = vals
+        new_book.accounts = accounts
+        return new_book
 
     def validate(self):
-        chk = []
+        errors = []
+        correct_checks = 0
         for vpoint in self.validations:
             ypol = self.ypoloipo(vpoint.account, vpoint.date)
             diafora = ypol - vpoint.delta
             if diafora == 0:
-                chk.append(
-                    f'{vpoint.date}:{vpoint.account}: ✓')
+                correct_checks += 1
             else:
-                chk.append(
+                errors.append(
                     f'{vpoint.date}: {vpoint.account:30} {ypol:>14}-> {diafora}')
-        return chk
+        return correct_checks, errors
 
     @property
     def number_of_transactions(self):
@@ -98,7 +106,7 @@ class Book:
         typos = (0, 0, 0, 0, 1, 1, 1)
         sizes = (50, 90, 80, 400, 80, 80, 80)
         vals = []
-        for trn in self.transactions:
+        for trn in sorted(self.transactions):
             for line in trn.lines:
                 laccount = line.account.name
                 if trn.afm:
@@ -129,10 +137,10 @@ class Book:
         total = 0
         for trn in self.transactions_filter(apo, eos):
             for line in trn.lines:
-                for acc in line.account.tree:
-                    accounts[acc] = accounts.get(acc, [0, 0])
-                    accounts[acc][0] += line.debit
-                    accounts[acc][1] += line.credit
+                acc = line.account.name
+                accounts[acc] = accounts.get(acc, [0, 0])
+                accounts[acc][0] += line.debit
+                accounts[acc][1] += line.credit
                 total += line.delta
         for key in sorted(accounts):
             delta = accounts[key][0] - accounts[key][1]
@@ -168,11 +176,10 @@ class Book:
         accounts = {}
         for trn in self.transactions:
             for line in trn.lines:
-                laccount = line.account.name
+                laccount = line.account
                 if trn.afm:
-                    laccount = f"{line.account.name}.{trn.afm}"
-                accs = account_tree(laccount)
-                for acc in accs:
+                    laccount = trs.Account(f"{line.account.name}.{trn.afm}")
+                for acc in laccount.tree:
                     accounts[acc] = accounts.get(acc, 0)
                     accounts[acc] += line.delta
         return accounts
@@ -221,56 +228,6 @@ class Book:
 
     def isologismos(self, apo, eos):
         pass
-
-    def parse(self, file):
-        trn = None
-        lines = []
-
-        with open(file) as fil:
-            lines = fil.read().split('\n')
-
-        for line in lines:
-            rline = line.rstrip()
-
-            # Αγνόησε τις κενές γραμμές
-            if len(rline) == 0:
-                continue
-
-            # Αγνόησε τις γραμμές σχολίων
-            elif rline.startswith('#'):
-                continue
-
-            # Γραμμή επιβεβαίωσης υπολοίπου
-            elif rline.startswith(('@')):
-                # @ 2020-05-10 Αγορές.Εμπορευμάτων.εσωτερικού -120,32
-                _, cdat, cacc, cval = rline.split()
-                self.validations.append(ValPoint(cdat, cacc, gr2dec(cval)))
-
-            elif rline[:10].replace('-', '').isnumeric():  # Γραμμή Head
-                # if status == LINE:
-                #     self.add_transaction(trn)
-                dat, par, _, per, *afma = rline.split('"')
-                dat = dat.strip()
-                par = par.strip()
-                per = per.strip()
-                afm = afma[0].strip() if afma else ''
-                trn = trs.Transaction(dat, par, per, afm)
-                self.add_transaction(trn)
-            else:
-                account, *val = rline.split()
-                if account == fpa_prefix:
-                    account = f'{fpa_prefix}.{trn.last_account}'
-                    pfpa = Decimal(trn.last_account.split('.')[-1][3:][:-1])
-                    calfpa = trn.last_delta * pfpa / Decimal(100)
-                    trn.fpa_status = 1
-                    # check fpa here
-                    if abs(Decimal(gr2strdec(val[0])) - calfpa) > 0.01:
-                        trn.fpa_status = 2
-                if val:
-                    trn.add_line_delta(account, gr2strdec(val[0]))
-                else:
-                    trn.add_last_line(account)
-        self.account_tree = trs.Account.account_list.full_tree
 
     def write2file(self, filename):
         if os.path.exists(filename):
