@@ -66,7 +66,7 @@ def parse(file):
                 if abs(val - calfpa) > 0.01:
                     trn.fpa_status = 2
             if val:
-                trn.add_line_delta(account, val)
+                trn.add_line(account, val)
                 tran_total += val
             else:
                 val = -tran_total

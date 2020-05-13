@@ -1,7 +1,7 @@
 from collections import namedtuple
 from dataclasses import dataclass
 import os
-from decimal import Decimal
+# from decimal import Decimal
 import qlogistiki.transaction as trs
 from qlogistiki.utils import gr2strdec, account_tree, gr2dec
 OUT, HEAD, LINE = 0, 1, 2
@@ -18,29 +18,23 @@ class ModelValues:
     sizes   : gird width for fields
     values  : list of records
     """
-    headers: list
-    aligns: list
-    types: list
-    sizes: list
+    headers: tuple
+    aligns: tuple
+    types: tuple
+    sizes: tuple
     values: list
 
 
 class Book:
-    def __init__(self, afm, company_name):
-        self.afm = afm
-        self.company_name = company_name
-        self.transactions = []
-        # self.account_tree = []
-        self.validations = []
-        self.accounts = []
+    __slots__ = ['afm', 'company_name',
+                 'transactions', 'validations', 'accounts']
 
-    @classmethod
-    def from_parsed(cls, afm, company, trans, vals, accounts):
-        new_book = cls(afm, company)
-        new_book.transactions = trans
-        new_book.validations = vals
-        new_book.accounts = accounts
-        return new_book
+    def __init__(self, afm, company, trans: list, vals, accounts):
+        self.afm = afm
+        self.company_name = company
+        self.transactions = trans
+        self.validations = vals
+        self.accounts = accounts
 
     def validate(self):
         errors = []
@@ -55,9 +49,16 @@ class Book:
                     f'{vpoint.date}: {vpoint.account:30} {ypol:>14}-> {diafora}')
         return correct_checks, errors
 
+    def max_account_name(self):
+        if self.accounts:
+            return max([len(i) for i in self.accounts.keys()])
+        return 0
+
     @property
     def number_of_transactions(self):
-        return len(self.transactions)
+        if self.transactions:
+            return len(self.transactions)
+        return 0
 
     def transactions_filter(self, apo=None, eos=None):
         for transaction in self.transactions:
@@ -68,6 +69,8 @@ class Book:
             yield transaction
 
     def add_transaction(self, transaction):
+        if not self.transactions:
+            self.transactions = []
         if isinstance(transaction, trs.Transaction):
             self.transactions.append(transaction)
         else:
@@ -98,7 +101,7 @@ class Book:
                         f"{line.delta:>14} {rsum:>14}"
                     )
 
-    def kartella_model(self, account: str) -> ModelValues:
+    def kartella_model(self, account: str, max_vals=200) -> ModelValues:
         rsum = 0
         headers = ('id', "Ημερομηνία", 'Παρ/κό', "Περιγραφή",
                    "Χρέωση", "Πίστωση", "Υπόλοιπο")
@@ -122,7 +125,7 @@ class Book:
                     vals.append([trn.id, trn.date, trn.parastatiko,
                                  trn.perigrafi, xre, pis, rsum])
         vals.reverse()
-        return ModelValues(headers, align, typos, sizes, vals)
+        return ModelValues(headers, align, typos, sizes, vals[:max_vals])
 
     def ypoloipo(self, account, eos=None):
         ypol = 0
@@ -228,14 +231,6 @@ class Book:
 
     def isologismos(self, apo, eos):
         pass
-
-    def write2file(self, filename):
-        if os.path.exists(filename):
-            raise ValueError('file already exists')
-        with open(filename, 'w') as fil:
-            for trn in self.transactions:
-                fil.write(trn.as_str())
-                fil.write('\n')
 
     def __repr__(self) -> str:
         return (

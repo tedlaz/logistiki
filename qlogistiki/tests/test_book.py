@@ -7,7 +7,7 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 
 class TestBoon(unittest.TestCase):
     def test_001(self):
-        b01 = Book('111222333', 'TestCo')
+        b01 = Book('111222333', 'TestCo', [], None, None)
         bfile = os.path.join(dir_path, 'booktst.txt')
         # bfile = os.path.join(dir_path, fil)
         # b01.parse(bfile)

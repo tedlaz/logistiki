@@ -1,13 +1,16 @@
 from collections import defaultdict
+from abc import ABC, abstractmethod
+from qlogistiki.utils import grup
 
 
-class ColumnType:
+class ColumnType(ABC):
+    @abstractmethod
+    def render(self, value, size: int) -> str:
+        pass
 
-    def render(self, value, size: int):
-        raise NotImplementedError
-
+    @abstractmethod
     def reverse(self, textline):
-        raise NotImplementedError
+        pass
 
     def fill_front_zeros(self, txtval: str, size: int) -> str:
         len_txtval = len(txtval)
@@ -28,6 +31,11 @@ class ColText(ColumnType):
 
     def reverse(self, txtvalue: str):
         return txtvalue.strip()
+
+
+class ColTextCapital(ColText):
+    def render(self, value, size: int) -> str:
+        return self.fill_back_spaces(grup(value), size)
 
 
 class ColDate(ColumnType):
@@ -89,14 +97,14 @@ class Column:
         return f'{self.name:30} {self.size:4}'
 
 
-class Line:
+class LineType:
     def __init__(self, name, prefix):
         self.name = name
         self.prefix = prefix
         self.columns = []
 
     def __str__(self):
-        st1 = f'Line {self.name!r} with total size:{self.size}\n'
+        st1 = f'LineType {self.name!r}, lineSize={self.size}\n'
         st1 += f"{'prefix':30} {self.prefix:>4}\n"
         for col in self.columns:
             st1 += f'{str(col)}\n'
@@ -106,10 +114,10 @@ class Line:
     def size(self):
         return sum(c.size for c in self.columns) + len(self.prefix)
 
-    def add_column(self, column):
+    def add_column(self, column: Column) -> None:
         self.columns.append(column)
 
-    def render(self, data):
+    def render(self, data: dict) -> str:
         stx = f'{self.prefix}'
         for column in self.columns:
             stx += column.render(data[column.name])
@@ -136,23 +144,33 @@ class Document:
         self.lines = []
 
     def __str__(self):
-        st1 = 'Document with template lines:\n'
-        st1 += '\n'.join(str(ltype) for ltype in self.linetypes.values())
-        return st1
+        lines = ['ΑΠΔ Αναλυτικά']
+        for line in self.lines:
+            for key, val in line.items():
+                lines.append(f'{key:<30}: {val:14}')
+            lines.append('')
+        return '\n'.join(lines)
 
-    def add_linetype(self, code: str, linetype):
-        if code in self.linetypes.keys():
-            raise ValueError('Linetype code already exists')
-        self.linetypes[code] = linetype
+    def add_linetype(self, linetype) -> None:
+        if linetype.prefix in self.linetypes.keys():
+            raise ValueError(
+                f'Linetype with code={linetype.prefix!r} already exists')
+        if linetype.name in self.linetype_names:
+            raise ValueError(
+                f'Linetype with name={linetype.name!r} already exists')
+        self.linetypes[linetype.prefix] = linetype
+
+    @property
+    def linetype_names(self) -> list:
+        return [i.name for i in self.linetypes.values()]
 
     def add_line(self, line):
         self.lines.append(line)
 
-    def print_lines(self):
-        for line in self.lines:
-            for key, val in line.items():
-                print(f'{key:<30}: {val:14}')
-            print()
+    def linetypes_report(self):
+        st1 = 'Document with template lines:\n'
+        st1 += '\n'.join(str(ltype) for ltype in self.linetypes.values())
+        return st1
 
     def render(self):
         lst = [self.linetypes[i['line_code']].render(i) for i in self.lines]
@@ -180,7 +198,7 @@ class Document:
                 apodoxes += line['apodoxes']
                 eisfores += line['katablitees_eisfores']
                 meres += line['imeres_asfalisis']
-        return apodoxes, eisfores, meres
+        return round(apodoxes, 2), round(eisfores, 2), meres
 
     def correct_header(self):
         l_apodoxes, l_eisfores, l_meres = self.get_totals()
@@ -190,12 +208,22 @@ class Document:
 
     def check(self):
         l_apodoxes, l_eisfores, l_meres = self.get_totals()
-        assert l_apodoxes == self.lines[0]['apodoxes']
-        assert l_eisfores == self.lines[0]['eisfores']
-        assert l_meres == self.lines[0]['totalmeres']
-        print('Everything is under control')
+        errors = []
+        if l_apodoxes != self.lines[0]['apodoxes']:
+            errors.append(
+                f"header apdoxes ({self.lines[0]['apodoxes']}) != total apodoxes({l_apodoxes})")
 
-    def malakia(self):
+        if l_eisfores != self.lines[0]['eisfores']:
+            errors.append(
+                f"header eisfores ({self.lines[0]['eisfores']}) != total eisfores({l_eisfores})")
+        if l_meres != self.lines[0]['totalmeres']:
+            errors.append(
+                f"header eisfores ({self.lines[0]['totalmeres']}) != total eisfores({l_meres})")
+        if errors:
+            raise ValueError('\n'.join(errors))
+        return True
+
+    def DublicateLines(self):
         pos = []
         val = []
         for i, lin in enumerate(self.lines):
@@ -210,11 +238,12 @@ class Document:
         val.reverse()
         print(pos)
         for i, ps in enumerate(pos):
-            self.lines.insert(ps+1, val[i])
+            self.lines.insert(ps + 1, val[i])
+        self.correct_header()
 
 
 def apd_builder():
-    li1 = Line(name='Header', prefix='1')
+    li1 = LineType(name='Header', prefix='1')
     li1.add_column(Column('plithos', ColTextInt(), 2))
     li1.add_column(Column('aa', ColTextInt(), 2))
     li1.add_column(Column('fname', ColText(), 8))
@@ -242,7 +271,7 @@ def apd_builder():
     li1.add_column(Column('pafsi', ColDate(), 8))
     li1.add_column(Column('filler', ColText(), 30))
 
-    li2 = Line(name='Stoixeia Ergazomenoy', prefix='2')
+    li2 = LineType(name='Stoixeia Ergazomenoy', prefix='2')
     li2.add_column(Column('ama', ColTextInt(), 9))
     li2.add_column(Column('amka', ColTextInt(), 11))
     li2.add_column(Column('asf_eponymo', ColText(), 50))
@@ -252,7 +281,7 @@ def apd_builder():
     li2.add_column(Column('asf_gennisi', ColDate(), 8))
     li2.add_column(Column('asf_afm', ColTextInt(), 9))
 
-    li3 = Line(name='Stoixeia misthodosias', prefix='3')
+    li3 = LineType(name='Stoixeia misthodosias', prefix='3')
     li3.add_column(Column('parartima_no', ColTextInt(), 4))
     li3.add_column(Column('kad', ColTextInt(), 4))
     li3.add_column(Column('plires_orario', ColTextInt(), 1))
@@ -277,11 +306,11 @@ def apd_builder():
     li3.add_column(Column('epid_ergodoti_poso', ColPoso(), 10))
     li3.add_column(Column('katablitees_eisfores', ColPoso(), 11))
 
-    leof = Line(name='Terminator line', prefix='EOF')
+    leof = LineType(name='Terminator line', prefix='EOF')
 
     do1 = Document()
-    do1.add_linetype('1', li1)
-    do1.add_linetype('2', li2)
-    do1.add_linetype('3', li3)
-    do1.add_linetype('EOF', leof)
+    do1.add_linetype(li1)
+    do1.add_linetype(li2)
+    do1.add_linetype(li3)
+    do1.add_linetype(leof)
     return do1

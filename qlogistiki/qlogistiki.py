@@ -6,9 +6,8 @@ from PyQt5 import QtCore as qc
 from PyQt5 import QtGui as qg
 from PyQt5 import QtWidgets as qw
 
-from qlogistiki.book import Book
-from qlogistiki.parser_text import parse
 from qlogistiki.utils import dec2gr
+from qlogistiki import data_operations_text as dot
 
 
 class Dmodel(qc.QAbstractTableModel):
@@ -52,7 +51,7 @@ class Dmodel(qc.QAbstractTableModel):
             return None
         if role == qc.Qt.DisplayRole:
             if self.mdata.types[index.column()] == 1:
-                return dec2gr(self.mdata.values[index.row()][index.column()])
+                return str(self.mdata.values[index.row()][index.column()])
             else:
                 return self.mdata.values[index.row()][index.column()]
         if role == qc.Qt.TextAlignmentRole:
@@ -68,9 +67,9 @@ class Dialog(qw.QWidget):
     def __init__(self, filename, parent=None):
         super().__init__(parent)
         self.parent = parent
-        self.book = Book('', '')
+        self.book = None
         if os.path.isfile(filename):
-            self.book = Book.from_parsed(*parse(filename))
+            self.book = dot.load_from_text(filename)
         mainlayout = qw.QVBoxLayout()
         self.setLayout(mainlayout)
         hlayout = qw.QHBoxLayout()
