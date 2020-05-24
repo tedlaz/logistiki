@@ -1,12 +1,10 @@
 import os
 import sys
-from datetime import date
 
 from PyQt5 import QtCore as qc
 from PyQt5 import QtGui as qg
 from PyQt5 import QtWidgets as qw
 
-from qlogistiki.utils import dec2gr
 from qlogistiki import data_operations_text as dot
 
 

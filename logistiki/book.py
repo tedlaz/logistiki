@@ -177,7 +177,7 @@ class Book:
                 typos = set()
                 accounts = set()
                 for lin in trn['lines']:
-                    if lin['account'][0] in '1267':
+                    if lin['account'][0] in '267':
                         accounts.add(lin['account'])
                         tval += ee_value_sign(lin)
                         typos.add(lin['account'][0])

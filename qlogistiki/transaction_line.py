@@ -55,3 +55,6 @@ class TransactionLine:
             f"value={self.value!r}"
             ")"
         )
+
+    def __str__(self):
+        return f"{self.account:<30} {self.debit:>14} {self.credit:>14}"

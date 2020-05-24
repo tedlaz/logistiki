@@ -13,6 +13,9 @@ Trl = namedtuple('Trl', 'date par per afm acc typos val')
 
 
 class Transaction:
+    """
+    Class dealing with transactions
+    """
     cid = 0
     __slots__ = ['id', 'date', 'parastatiko', 'perigrafi',
                  'afm', 'delta', 'lines', 'fpa_status']
@@ -37,6 +40,9 @@ class Transaction:
 
     @property
     def uid(self) -> str:
+        """
+        Generate a unique id
+        """
         date_part = self.date.replace('-', '')
         afm_part = self.afm  # or '000000000'
         parastatiko_part = self.parastatiko.replace(' ', '')
@@ -56,8 +62,22 @@ class Transaction:
         return False
 
     @property
-    def total(self) -> Dec:
+    def total(self):
         return sum(l.debit for l in self.lines)
+
+    def get_lines_by_account(self, account_part, running_sum, found):
+        for line in self.lines:
+            if line.account.name.startswith(account_part):
+                running_sum['total'] += line.value
+                found.append((
+                    self.id,
+                    self.date,
+                    self.parastatiko,
+                    self.perigrafi,
+                    line.debit,
+                    line.credit,
+                    running_sum['total']
+                ))
 
     def add_line(self, account: str, value):
         new_line = TransactionLine(account, value)
@@ -113,7 +133,7 @@ class Transaction:
     def __str__(self) -> str:
         ast = f'\n{self.date} {self.parastatiko} {self.perigrafi} {self.afm}\n'
         for lin in self.lines:
-            ast += f'{lin.account.name:<40}{lin.debit:>14}{lin.credit:>14}\n'
+            ast += f'  {lin}\n'
         return ast
 
     def __eq__(self, oth):
@@ -121,5 +141,5 @@ class Transaction:
 
     def __lt__(self, oth):
         if self.date == oth.date:
-            return self.total < oth.total
+            return self.id < oth.id
         return self.date < oth.date

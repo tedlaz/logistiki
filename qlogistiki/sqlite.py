@@ -14,11 +14,19 @@ def namedtuple_factory(cursor, row):
     return Row(*row)
 
 
-class Sqlite:
+class DataManager:
     def __init__(self, dbf=None):
         self.db = dbf
         self.connection = None
         self.lastrowid = 0
+
+    def __del__(self):
+        if self.connection:
+            self.connection.close()
+
+    def close(self):
+        if self.connection is not None:
+            self.connection.close()
 
     def connect(self):
         if self.connection:
@@ -27,6 +35,7 @@ class Sqlite:
             self.db = ':memory:'
         try:
             self.connection = sqlite3.connect(self.db)
+            self.connection.row_factory = namedtuple_factory
         except Exception as e:
             print(e)
 
@@ -36,62 +45,93 @@ class Sqlite:
         if self.connection:
             self.connection.create_function(fname, argno, function)
 
-    def disconnect(self):
-        if self.connection is not None:
-            self.connection.close()
-
-    def create(self, sql):
+    def _execute(self, sql, parameters=None):
         self.connect()
-        try:
-            self.connection.execute(sql)
-        except OperationalError as e:
-            print(e)
-
-    def insert(self, sql):
-        self.connect()
-        try:
+        with self.connection:
             cursor = self.connection.cursor()
-            cursor.execute(sql)
-            self.connection.commit()
-            self.lastrowid = cursor.lastrowid
-            cursor.close()
-            return self.lastrowid
-        except OperationalError as e:
-            print(e)
+            cursor.execute(sql, parameters or [])
+            return cursor
 
-    def update(self, sql):
-        self.connect()
-        try:
-            self.connection.execute(sql)
-            self.connection.commit()
-        except OperationalError as e:
-            print(e)
+    def create_table(self, table_name: str, columns: dict):
+        columns_sql = [
+            f'{column_name} {column_type}'
+            for column_name, column_type in columns.items()
+        ]
+        id_sql = ['id INTEGER PRIMARY KEY']
+        sql_list = id_sql + columns_sql
+        sql = (
+            f'CREATE TABLE IF NOT EXISTS {table_name}'
+            f"({', '.join(sql_list)});"
+        )
+        self._execute(sql)
 
-    def delete_table_id(self, table, id_):
-        sql = f"DELETE FROM {table} WHERE id={id_};"
-        self.select_one(sql)
+    def add(self, table_name: str, data: dict) -> int:
+        qmarks = ', '.join('?' * len(data))
+        column_names = ', '.join(data.keys())
+        column_values = tuple(data.values())
+        sql = (
+            f"INSERT INTO {table_name} "
+            f"({column_names}) "
+            f"VALUES ({qmarks});"
+        )
+        cursor = self._execute(sql, column_values)
+        self.lastrowid = cursor.lastrowid
+        return self.lastrowid
+
+    def update(self, table_name: str, data: dict, id_: int):
+        sql_columns = ', '.join([f'{column} = ?' for column in data.keys()])
+        sql = (
+            f'UPDATE {table_name} '
+            f'SET {sql_columns} '
+            f'WHERE id={id_};'
+        )
+        self._execute(sql, tuple(data.values()))
+
+    def delete(self, table_name: str, criteria: dict):
+        placeholders = [f'{column} = ?' for column in criteria.keys()]
+        delete_criteria = ' AND '.join(placeholders)
+        sql = f'DELETE FROM {table_name} WHERE {delete_criteria};'
+        self._execute(sql, tuple(criteria.values()))
         return True
 
-    def select_one(self, sql):
-        self.connection.row_factory = namedtuple_factory
-        cursor = self.connection.execute(sql)
-        result = cursor.fetchone()
-        if result is not None:
-            return result
-        return None
+    def select(self, table_name, criteria: dict = None, order_by: str = None):
+        criteria = criteria or {}
+        sql = f'SELECT * FROM {table_name}'
 
-    def select_all(self, sql):
-        self.connection.row_factory = namedtuple_factory
-        cursor = self.connection.execute(sql)
-        result = cursor.fetchall()
-        if result is not None:
-            return result
-        return None
+        if criteria:
+            placeholders = [f'{column} = ?' for column in criteria.keys()]
+            sql_criteria = ' AND '.join(placeholders)
+            sql += f' WHERE {sql_criteria}'
 
-    def select_table_all(self, table):
-        sql = f'SELECT * FROM {table};'
-        return self.select_all(sql)
+        if order_by:
+            sql += f' ORDER BY {order_by}'
 
-    def select_table_id(self, table, id_):
-        sql = f'SELECT * FROM {table} WHERE id={id_};'
-        return self.select_one(sql)
+        return self._execute(sql, tuple(criteria.values()))
+
+    def create_md(self, master, detail, columns_master, columns_detail):
+        self.create_table(master, columns_master)
+        columns_detail[f'{master}_id'] = 'INTEGER NOT NULL'
+        self.create_table(detail, columns_detail)
+
+    def select_md(self, master, detail, id_):
+        sqlm = f'SELECT * from {master} WHERE id={id_};'
+        sqld = f'SELECT * from {detail} WHERE {master}_id={id_};'
+        data = {}
+        data['master'] = self._execute(sqlm).fetchone()
+        data['detail'] = self._execute(sqld).fetchall()
+        return data
+
+    def add_md(self, master, detail, data):
+        lastid = self.add(master, data['master'])
+        for det in data['detail']:
+            det[f'{master}_id'] = lastid
+            self.add(detail, det)
+
+    def update_md(self, master, detail, criteria):
+        pass
+
+    def sql(self, sql):
+        """
+        Execute plain sql
+        """
+        return self._execute(sql)

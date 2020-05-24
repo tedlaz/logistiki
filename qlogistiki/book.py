@@ -1,9 +1,9 @@
 from collections import namedtuple
 from dataclasses import dataclass
-import os
 # from decimal import Decimal
 import qlogistiki.transaction as trs
-from qlogistiki.utils import gr2strdec, account_tree, gr2dec
+from qlogistiki.utils import account_tree
+from qlogistiki.dec import Dec
 OUT, HEAD, LINE = 0, 1, 2
 fpa_prefix = 'ΦΠΑ'
 ValPoint = namedtuple('ValPoint', 'date account delta')
@@ -27,14 +27,24 @@ class ModelValues:
 
 class Book:
     __slots__ = ['afm', 'company_name',
-                 'transactions', 'validations', 'accounts']
+                 'transactions', 'validations', 'accounts', 'anoigma']
 
-    def __init__(self, afm, company, trans: list, vals, accounts):
+    def __init__(self, afm, company, trans: list, vals, accounts, anoigma):
         self.afm = afm
         self.company_name = company
         self.transactions = trans
         self.validations = vals
         self.accounts = accounts
+        self.anoigma = anoigma
+
+    def arthro_anoigmatos(self):
+        if not self.anoigma:
+            return
+        tran = trs.Transaction('2000-01-01', 'Λογ.Εγγρ.', 'Ανοιγμα')
+        for alin in self.anoigma:
+            tran.add_line(alin.account, alin.value)
+        tran.add_last_line('Ανοιγμα')
+        return tran
 
     def validate(self):
         errors = []
@@ -101,7 +111,7 @@ class Book:
                         f"{line.delta:>14} {rsum:>14}"
                     )
 
-    def kartella_model(self, account: str, max_vals=200) -> ModelValues:
+    def kartella_model(self, account: str, max_vals=20000) -> ModelValues:
         rsum = 0
         headers = ('id', "Ημερομηνία", 'Παρ/κό', "Περιγραφή",
                    "Χρέωση", "Πίστωση", "Υπόλοιπο")
@@ -109,21 +119,9 @@ class Book:
         typos = (0, 0, 0, 0, 1, 1, 1)
         sizes = (50, 90, 80, 400, 80, 80, 80)
         vals = []
+        running_sum = {'total': 0}
         for trn in sorted(self.transactions):
-            for line in trn.lines:
-                laccount = line.account.name
-                if trn.afm:
-                    laccount = f"{line.account.name}.{trn.afm}"
-                if laccount.startswith(account):
-                    rsum += line.delta
-                    if line.delta < 0:
-                        xre = 0
-                        pis = -line.delta
-                    else:
-                        xre = line.delta
-                        pis = 0
-                    vals.append([trn.id, trn.date, trn.parastatiko,
-                                 trn.perigrafi, xre, pis, rsum])
+            trn.get_lines_by_account(account, running_sum, vals)
         vals.reverse()
         return ModelValues(headers, align, typos, sizes, vals[:max_vals])
 
@@ -230,6 +228,12 @@ class Book:
             print("Δεν υπάρχουν λάθη σε εγγραφές με ΦΠΑ")
 
     def isologismos(self, apo, eos):
+        """
+        Χρειαζόμαστε τρία πράγματα:
+        1. Απογραφή έναρξης
+        2. Κινήσεις περιόδου
+        3. Απογραφή λήξης
+        """
         pass
 
     def __repr__(self) -> str:

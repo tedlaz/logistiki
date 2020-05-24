@@ -4,15 +4,20 @@ from qlogistiki.utils import gr2dec
 from qlogistiki.transaction import Transaction
 
 ValPoint = namedtuple('ValPoint', 'date account delta')
+Anoigma = namedtuple('Anoigma', 'account value')
 fpa_prefix = 'ΦΠΑ'
 
 
 def parse(file):
+    """
+    Parser for accounting text files
+    """
     trn = None
     company_afm = ''
     company_name = ''
     transactions = []
     validations = []
+    anoigma = []
     accounts = defaultdict(Decimal)
     tran_total = 0
 
@@ -35,6 +40,11 @@ def parse(file):
             _, co_afm, *co_name = rline.split()
             company_afm = co_afm
             company_name = ' '.join(co_name)
+
+        # Εγγραφές ανοίγματος
+        elif rline.startswith('!'):
+            _, accounta, value = rline.split()
+            anoigma.append(Anoigma(accounta, gr2dec(value)))
 
         # Γραμμή επιβεβαίωσης υπολοίπου
         elif rline.startswith(('@')):
@@ -72,4 +82,4 @@ def parse(file):
                 val = -tran_total
                 trn.add_last_line(account)
             accounts[account] += val
-    return company_afm, company_name, transactions, validations, accounts
+    return company_afm, company_name, transactions, validations, accounts, anoigma

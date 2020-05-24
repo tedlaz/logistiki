@@ -15,6 +15,7 @@ class TestTransaction(TestCase):
         tr1.add_line('fpa 24%', 24)
         tr1.add_last_line('promitheftes')
         # print('\n', tr1.as_str())
+        # print(tr1)
         self.assertEqual(tr1.uid, '2020011012400')
         tr1.afm = '123123123'
         self.assertEqual(tr1.uid, '2020011012312312312400')

@@ -24,3 +24,9 @@ class Account():
 
     def __repr__(self):
         return f'Account(name={self.name!r})'
+
+    def __str__(self):
+        return f'{self.name}'
+
+    def __format__(self, format_spec):
+        return f'{self.name:{format_spec}}'

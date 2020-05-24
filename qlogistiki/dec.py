@@ -76,7 +76,10 @@ class Dec:
         return f'Dec({self.fval:.2f})'
 
     def __str__(self):
-        return self.gr0
+        return self.gr
+
+    def __format__(self, format_spec):
+        return f"{self.gr0:{format_spec}}"
 
     @classmethod
     def from_gr(cls, val):
@@ -86,7 +89,7 @@ class Dec:
     def gr0(self):
         """
         0         becomes '0,00'
-        123456.78 becomes '123.456,78'
+        123456.78 becomes '123.456,pytest
         123456.70 becomes '123.456,70'
         123456.00 becomes '123.456,00'
         """

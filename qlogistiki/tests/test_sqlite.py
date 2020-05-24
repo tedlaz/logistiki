@@ -1,22 +1,62 @@
 from os import name
 from unittest import TestCase
 from collections import namedtuple
-from qlogistiki.sqlite import Sqlite
+from qlogistiki.sqlite import DataManager
 
 
 class TestSqlite(TestCase):
     def setUp(self) -> None:
-        self.db = Sqlite()
-        self.db.create(
-            "CREATE TABLE erg(id INTEGER PRIMARY KEY, epo TEXT, ono TEXT);")
-        self.db.insert("INSERT INTO erg (epo, ono) VALUES('Laz', 'Ted');")
-        self.db.insert("INSERT INTO erg (epo, ono) VALUES('Laz', 'Kon');")
-        self.db.insert("INSERT INTO erg (epo, ono) VALUES('Dazea', 'Popi');")
+        self.db = DataManager()
+        self.db.create_table('erg', {'epo': 'TEXT', 'ono': 'TEXT'})
+        self.db.add('erg', {'epo': 'Laz', 'ono': 'Ted'})
+        self.db.add('erg', {'epo': 'Laz', 'ono': 'Kon'})
+        self.db.add('erg', {'epo': 'Dazea', 'ono': 'Popi'})
+        self.db.create_md(
+            'trn',
+            'trnd',
+            {
+                'date': 'DATE',
+                'par': 'TEXT NOT NULL',
+                'per': 'TEXT NOT NULL',
+                'afm': 'TEXT'
+            },
+            {
+                'acc': 'TEXT NOT NULL',
+                'val': 'NUMERIC NOT NULL DEFAULT 0'
+            }
+        )
 
     def tearDown(self) -> None:
-        self.db.disconnect()
+        # self.db.close()
+        pass
 
-    def test_001(self):
+    def test_md(self):
+        self.db.add_md(
+            'trn',
+            'trnd',
+            {
+                'master': {'date': '2019-01-15', 'par': 'TDA35', 'per': 'test'},
+                'detail': [
+                    {'acc': '38.00.00', 'val': 100},
+                    {'acc': '30.00.00', 'val': 100}
+                ]
+            }
+        )
+        self.db.add_md(
+            'trn',
+            'trnd',
+            {
+                'master': {'date': '2019-01-16', 'par': 'TDA36', 'per': 'test2'},
+                'detail': [
+                    {'acc': '20.00.24', 'val': 100},
+                    {'acc': '54.00.24', 'val': 24},
+                    {'acc': '50.00.00', 'val': -124}
+                ]
+            }
+        )
+        # print(self.db.select_md('trn', 'trnd', 2))
+
+    def test_select(self):
         Row = namedtuple('Row', 'id epo ono')
         vals = [
             Row(id=1, epo='Laz', ono='Ted'),
@@ -27,19 +67,18 @@ class TestSqlite(TestCase):
             Row(id=1, epo='Laz', ono='Ted'),
             Row(id=3, epo='Dazea', ono='Popi')
         ]
-        self.assertEqual(self.db.select_all("SELECT * FROM erg"), vals)
-        self.assertEqual(self.db.select_one(
-            "SELECT * FROM erg where id=2"), Row(2, 'Laz', 'Kon'))
-        self.assertEqual(self.db.select_table_all('erg'), vals)
-        self.assertEqual(
-            self.db.select_table_id('erg', 2),
-            Row(2, 'Laz', 'Kon')
-        )
-        self.assertTrue(self.db.delete_table_id('erg', 2))
-        self.assertEqual(self.db.select_table_all('erg'), val2)
+
+        data_all = self.db.select('erg').fetchall()
+        self.assertEqual(data_all, vals)
+
+        data_one = self.db.select('erg', {'id': 2}).fetchone()
+        self.assertEqual(data_one, Row(2, 'Laz', 'Kon'))
+
+        self.assertTrue(self.db.delete('erg', {'id': 2}))
+
         self.assertEqual(self.db.lastrowid, 3)
 
-    def test_002(self):
+    def test_attach_function(self):
         def grup(txtval):
             """Trasforms a string to uppercase special for Greek comparison
             """
@@ -49,13 +88,19 @@ class TestSqlite(TestCase):
             return ''.join([adi.get(letter, letter.upper()) for letter in txtval])
 
         self.db.attach_function(grup)
-        sql = 'SELECT grup(epo) as cepo FROM erg'
+
+        sql = 'SELECT grup(epo) as cepo FROM erg WHERE id < 3'
         Epo = namedtuple('Epo', 'cepo')
-        self.assertEqual(
-            self.db.select_all(sql),
-            [Epo(cepo='LAZ'), Epo(cepo='LAZ'), Epo(cepo='DAZEA')]
-        )
-        self.db.insert(
-            "INSERT INTO erg (epo, ono) VALUES('Λάζαρος', 'Θεόδωρος');")
+        data = self.db.sql(sql).fetchall()
+        self.assertEqual(data, [Epo(cepo='LAZ'), Epo(cepo='LAZ')])
+
+        self.db.add('erg', {'epo': 'Λάζαρος', 'ono': 'Θεόδωρος'})
+
         sql2 = 'SELECT GRUP(epo) as cepo FROM erg WHERE id=4'
-        self.assertEqual(self.db.select_one(sql2), Epo('ΛΑΖΑΡΟΣ'))
+        self.assertEqual(self.db.sql(sql2).fetchone(), Epo('ΛΑΖΑΡΟΣ'))
+
+    def test_update(self):
+        Row = namedtuple('Row', 'id epo ono')
+        er1 = Row(1, 'Laz', 'Teddyboy')
+        self.db.update('erg', {'ono': 'Teddyboy'}, 1)
+        self.assertEqual(self.db.select('erg', {'id': 1}).fetchone(), er1)
