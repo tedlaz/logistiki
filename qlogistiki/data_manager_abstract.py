@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 
-class DataManager(ABC):
+class AbstractDataManager(ABC):
     @abstractmethod
     def create(self, data):
         pass
@@ -18,12 +18,6 @@ class DataManager(ABC):
     def delete(self):
         pass
 
-
-class Test(DataManager):
-
-    def create(self):
+    @abstractmethod
+    def make_permanent(self):
         pass
-
-
-if __name__ == '__main__':
-    a = Test()

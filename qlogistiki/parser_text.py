@@ -4,7 +4,7 @@ from qlogistiki.utils import gr2dec
 from qlogistiki.transaction import Transaction
 
 ValPoint = namedtuple('ValPoint', 'date account delta')
-Anoigma = namedtuple('Anoigma', 'account value')
+Anoigma = namedtuple('Anoigma', 'date account value')
 fpa_prefix = 'ΦΠΑ'
 
 
@@ -42,9 +42,9 @@ def parse(file):
             company_name = ' '.join(co_name)
 
         # Εγγραφές ανοίγματος
-        elif rline.startswith('!'):
-            _, accounta, value = rline.split()
-            anoigma.append(Anoigma(accounta, gr2dec(value)))
+        elif rline.startswith('<'):
+            _, adate, accounta, value = rline.split()
+            anoigma.append(Anoigma(adate, accounta, gr2dec(value)))
 
         # Γραμμή επιβεβαίωσης υπολοίπου
         elif rline.startswith(('@')):
@@ -63,7 +63,7 @@ def parse(file):
             trn = Transaction(dat, par, per, afm)
             transactions.append(trn)
             tran_total = 0
-        else:
+        elif rline[:2] == '  ':  # Line detail
             account, *txtval = rline.split()
             val = gr2dec(txtval[0]) if txtval else 0
             # Εδώ δημιουργείται αυτόματα ο λογαριασμός ΦΠΑ
@@ -82,4 +82,6 @@ def parse(file):
                 val = -tran_total
                 trn.add_last_line(account)
             accounts[account] += val
+        else:  # Υπάρχουν γραμμές που ξεκινούν με μη αποδεκτό χαρακτήρα
+            pass
     return company_afm, company_name, transactions, validations, accounts, anoigma

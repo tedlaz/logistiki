@@ -1,53 +1,43 @@
 import sys
 import os
 from datetime import datetime
-from qlogistiki.sqlite import DataManager
+import readline
+# from qlogistiki.sqlite import DataManager
+from qlogistiki.data_manager_text import DataManager
 
-db = DataManager()
-
-
-class CreateBookmarksTableCommand:
-    def execute(self):
-        db.create_table(
-            'bookmarks',
-            {
-                'title': 'TEXT NOT NULL',
-                'url': 'TEXT NOT NULL',
-                'notes': 'TEXT',
-                'date_added': 'TEXT NOT NULL'
-            }
-        )
+dm = DataManager()
 
 
 class AddBookmarkCommand:
-    def execute(self, data):
+    def __call__(self, data):
         data['date_added'] = datetime.utcnow().isoformat()
-        db.add('bookmarks', data)
-        return f'Bookmark No {db.lastrowid} added!'
+        dm.create(data)
+        return f'Bookmark No {dm.lastrowid} added!'
+
+
+class EditBookmarkCommand:
+    def __call__(self, id_):
+        dm.update(data)
 
 
 class ListBookmarksCommand:
     def __init__(self, order_by='date_added'):
         self.order_by = order_by
 
-    def execute(self):
-        data = db.select('bookmarks', order_by=self.order_by).fetchall()
-        return '\n'.join(f'{r.id:5} {r.title:20} {r.url} {r.notes}' for r in data)
-
-
-class EditBookmarkCommand:
-    def execute(self, data):
-        db.update('bookmarks', data, 12)
+    def __call__(self, data=None):
+        data = dm.read(self.order_by)
+        return '\n'.join(f'{r.id:5} {r.title:20} {r.url} {r.notes} {r.date_added}' for r in data)
 
 
 class DeleteBookmarkCommand:
-    def execute(self, id_):
-        db.delete('bookmarks', {'id': id_})
+    def __call__(self, id_):
+        dm.delete(id_)
         return f'Bookmark with id={id_} deleted'
 
 
 class QuitCommand:
-    def execute(self):
+    def __call__(self, data=None):
+        dm.make_permanent()
         sys.exit()
 
 
@@ -57,9 +47,9 @@ class Option:
         self.command = command
         self.prep_call = prep_call
 
-    def choose(self):
+    def __call__(self):
         data = self.prep_call() if self.prep_call else None
-        msg = self.command.execute(data) if data else self.command.execute()
+        msg = self.command(data)
         print(msg)
 
     def __str__(self):
@@ -91,6 +81,14 @@ def get_user_input(label, required=True):
     return value
 
 
+def linput_preloaded(prompt, prefill=''):
+    readline.set_startup_hook(lambda: readline.insert_text(prefill))
+    try:
+        return input(prompt)  # or raw_input in Python 2
+    finally:
+        readline.set_startup_hook()
+
+
 def get_new_bookmark_data():
     return {
         'title': get_user_input('Title'),
@@ -99,11 +97,11 @@ def get_new_bookmark_data():
     }
 
 
-def get_bookmark_id_for_deletion():
+def get_bookmark_data_for_deletion():
     return get_user_input('Enter a Bookmar id to delete')
 
 
-def get_bookmark_id_for_editing():
+def get_bookmark_data_for_editing():
     return get_user_input('Enter a bookmark id for editing')
 
 
@@ -112,25 +110,24 @@ def clear_screen():
     os.system(clear)
 
 
-def loop():
+def loop(options):
     clear_screen()
     print_options(options)
     chosen_option = get_option_choice(options)
     clear_screen()
-    chosen_option.choose()
+    chosen_option()
     input("Press Enter to continue...")
 
 
 if __name__ == '__main__':
-    print('welcome to Bark!')
-    CreateBookmarksTableCommand().execute()
-    options = {
+    # CreateBookmarksTableCommand()()
+    optionsv = {
         'A': Option('Add a bookmark', AddBookmarkCommand(), get_new_bookmark_data),
         'B': Option('List Bookmarks by date', ListBookmarksCommand()),
         'T': Option('List Bookmarks by title', ListBookmarksCommand('title')),
-        'E': Option('Edit Bookmark', EditBookmarkCommand(), get_bookmark_id_for_editing),
-        'D': Option('Delete a Bookmark', DeleteBookmarkCommand(), get_bookmark_id_for_deletion),
+        'E': Option('Edit Bookmark', EditBookmarkCommand(), get_bookmark_data_for_editing),
+        'D': Option('Delete a Bookmark', DeleteBookmarkCommand(), get_bookmark_data_for_deletion),
         'Q': Option('Quit', QuitCommand())
     }
     while True:
-        loop()
+        loop(optionsv)
