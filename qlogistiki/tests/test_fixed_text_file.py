@@ -12,7 +12,7 @@ def test_fixed_text_file_01():
     t1 = v1.render('αργυρίου', 10)
     assert t1 == 'ΑΡΓΥΡΙΟΥ  '
 
-    print(apd.lines)
+    # print(apd.lines)
     assert apd.check()
     rval = apd.render()
     assert rval.startswith('10101CSL01   0101218ΠΑΡΟΥ')
@@ -27,5 +27,7 @@ def test_fixed_text_file_01():
     # do1.malakia()
     # apd.correct_header()
     # apd.render2file('CSL01-corrected')
-    # print(apd)
+    print('')
+    # print(apd.with_greek_lbl())
+    print(apd.synodeftiko())
     # print(apd.linetypes_report())

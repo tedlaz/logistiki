@@ -40,7 +40,7 @@ class DataManager(AbstractDataManager):
         pass
 
     def delete(self, id_):
-        del self.data[id_]
+        del self.data[int(id_)]
 
     def make_permanent(self):
         text_lines = ''

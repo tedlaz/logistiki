@@ -124,7 +124,7 @@ def parse_imerologio(fil: str, encoding='WINDOWS-1253') -> tuple:
 
 
 # Kin = namedtuple('Kin', "id dat typ ee par per afm csy val fpa tot")
-ESEJ = {'ΠΑΓ': 2, 'ΤΠΥ': 1, 'ΤΠΛ': 1, 'ΑΠΥ': 1, 'ΑΠΛ': 1, 'ΤΑΓ': 2}
+ESEJ = {'ΠΑΓ': 2, 'ΤΠΥ': 1, 'ΤΠΛ': 1, 'ΑΠΥ': 1, 'ΑΠΛ': 1, 'ΤΑΓ': 2, 'ΠΙΣ': 1}
 
 
 def parse_esex(fil, enc='WINDOWS-1253'):
