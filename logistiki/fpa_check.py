@@ -23,7 +23,7 @@ def fpa_errors(tran, acc_fpa, threshold):
     return False
 
 
-def check_fpa(cfg, threshold=0.01):
+def parse_acc_fpa(cfg):
     fpas = dict(cfg['fpa'])
     fpas = {el: fpas[el].split() for el in fpas}
     acc_fpa = {}
@@ -32,11 +32,19 @@ def check_fpa(cfg, threshold=0.01):
         cod = int(cod)
         fpa = int(fpa)
         for val in vals:
+            """Επειδή οι εγγραφές ενδοκοινοτικών δεν έχουν ΦΠΑ και ο
+               υπολογισμός γίνεται μόνο για το έντυπο, κατά τον έλεγχο
+               βάζουμε την τιμή να είναι 0
+            """
             if cod_fpa in ('364_24', ):
                 acc_fpa[val] = dec(0)
             else:
                 acc_fpa[val] = dec(fpa)
-    # print(acc_fpa)
+    return acc_fpa
+
+
+def check_fpa(cfg, threshold=0.01):
+    acc_fpa = parse_acc_fpa(cfg)
 
     book = prs.parse_all(dict(cfg['company']), cfg['parse']['file_path'])
     errors = []
