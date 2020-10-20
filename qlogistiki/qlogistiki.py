@@ -151,7 +151,7 @@ class Dialog(qw.QWidget):
         for i, size in enumerate(self.model_lmos.mdata.sizes):
             self.tbl.setColumnWidth(i, size)
         self.tbl.resizeRowsToContents()
-        self.lbl.setText(f"{lmos} (lifo 200)")
+        self.lbl.setText(f"{lmos}")
 
 
 class MainWindow(qw.QMainWindow):
@@ -159,7 +159,7 @@ class MainWindow(qw.QMainWindow):
         super().__init__()
         self.setAttribute(qc.Qt.WA_DeleteOnClose)
         self.settings = qc.QSettings()
-        self.setMinimumSize(1300, 800)
+        self.setMinimumSize(1600, 800)
         # self.isUntitled = True
         self.fnam = filename
         self.createMenus()

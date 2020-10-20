@@ -117,7 +117,7 @@ class Book:
                    "Χρέωση", "Πίστωση", "Υπόλοιπο")
         align = (0, 1, 1, 1, 3, 3, 3)
         typos = (0, 0, 0, 0, 1, 1, 1)
-        sizes = (50, 90, 80, 400, 80, 80, 80)
+        sizes = (50, 110, 80, 600, 80, 80, 95)
         vals = []
         running_sum = {'total': 0}
         for trn in sorted(self.transactions):
