@@ -35,7 +35,7 @@ def parse(file):
         elif rline.startswith('#'):
             continue
 
-        # Στοιχεία εταιρείας (ΑΦΜ, Πεωνυμία)
+        # Στοιχεία εταιρείας (ΑΦΜ, Επωνυμία)
         elif rline.startswith('$'):
             _, co_afm, *co_name = rline.split()
             company_afm = co_afm
@@ -52,7 +52,8 @@ def parse(file):
             _, cdat, cacc, cval = rline.split()
             validations.append(ValPoint(cdat, cacc, gr2dec(cval)))
 
-        elif rline[:10].replace('-', '').isnumeric():  # Γραμμή Head
+        # Γραμμή Head (Ημερομηνία EEEE-MM-DD γίνεται EEEEMMDD αριθμητικό)
+        elif rline[:10].replace('-', '').isnumeric():
             # if status == LINE:
             #     self.add_transaction(trn)
             dat, par, _, per, *afma = rline.split('"')
@@ -63,6 +64,8 @@ def parse(file):
             trn = Transaction(dat, par, per, afm)
             transactions.append(trn)
             tran_total = 0
+
+        # Γραμμή λεπτομέρειας
         elif rline[:2] == '  ':  # Line detail
             account, *txtval = rline.split()
             val = gr2dec(txtval[0]) if txtval else 0
