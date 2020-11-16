@@ -66,6 +66,7 @@ class Dialog(qw.QWidget):
         super().__init__(parent)
         self.parent = parent
         self.book = None
+        self.checked_account = ''
         if os.path.isfile(filename):
             self.book = dot.load_from_text(filename)
         mainlayout = qw.QVBoxLayout()
@@ -121,15 +122,21 @@ class Dialog(qw.QWidget):
         correct_no, err = self.book.validate()
         errm = '\n'.join(err)
         message = f'Number of correct checks: {correct_no}\n'
-        message += f'Errors:\n{errm}'
+        if err:
+            message += f'Errors:\n{errm}'
+        else:
+            message += 'No errors :-)'
         qw.QMessageBox.about(self, 'Validations', message)
 
     def refresh_model_from_iso(self, acc):
         """
         iso means isozygio
         """
-        self.lbl.setText('Loading data ...')
         account = acc.sibling(acc.row(), 0).data()
+        # Για να μην κάνει refresh όταν επιλέγεται ο ίδιος λογαριασμός
+        if account == self.checked_account:
+            return
+        self.checked_account = account
         lred_color = ('Εξοδα', 'Αγορές', 'Προμηθευτές',
                       'Πιστωτές', 'ΦΠΑ', 'Εργαζόμενοι')
         lgreen_color = ('Πωλήσεις', 'Πελάτες', 'Εσοδα', 'Χρεώστες')
