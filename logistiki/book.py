@@ -1,6 +1,19 @@
+from openpyxl import Workbook
+from openpyxl.styles import Alignment, Font, NamedStyle
 from logistiki.utils import dec, dec2gr, startswith_any, dec2grp, date_iso2gr
 from logistiki.utils import levels_reverse
 from logistiki.logger import logger
+
+
+def trimino(isodate):
+    yyy, mmm, ddd = isodate.split('-')
+    trim = {
+        '01': '1', '02': '1', '03': '1',
+        '04': '2', '05': '2', '06': '2',
+        '07': '3', '08': '3', '09': '3',
+        '10': '4', '11': '4', '12': '4'
+    }
+    return f"{yyy}{trim[mmm]}"
 
 
 def ee_value_sign(acline):
@@ -240,6 +253,125 @@ class Book:
         print(f"Κέρδος 7-2-6 : {tot7-tot6-tot2:>12} {fpa7-fpa6-fpa2:>12}")
         print('=' * 40)
 
+    def ee_bookd(self):
+        """
+        Βιβλίο εσόδων-εξόδων
+        """
+        acs = {
+            '20.01.00.024': '2.24',
+            '24.01.00.024': '2.24',
+            '24.02.00.000': '2.00',
+            '25.01.00.024': '2.24',
+            '54.00.20.024': '54.26',
+            '54.00.24.024': '54.26',
+            '54.00.25.024': '54.26',
+            '54.00.29.006': '54.26',
+            '54.00.29.013': '54.26',
+            '54.00.29.024': '54.26',
+            '54.00.71.017': '54.7',
+            '54.00.71.024': '54.7',
+            '54.00.71.117': '54.7',
+            '54.00.71.124': '54.7',
+            '54.00.73.024': '54.7',
+            '62.03.00.000': '6.00',
+            '62.03.00.024': '6.24',
+            '62.03.02.000': '6.00',
+            '62.03.02.024': '6.24',
+            '62.07.02.024': '6.24',
+            '62.98.00.006': '6.06',
+            '62.98.99.024': '6.24',
+            '63.04.00.000': '6.00',
+            '64.00.00.000': '6.00',
+            '64.00.02.024': '6.24',
+            '64.02.06.000': '6.00',
+            '64.02.06.013': '6.13',
+            '64.02.06.024': '6.24',
+            '64.02.99.024': '6.24',
+            '64.05.01.000': '6.00',
+            '64.07.03.024': '6.24',
+            '65.98.98.000': '6.00',
+            '71.00.00.017': '7l.17',
+            '71.00.00.024': '7l.24',
+            '71.00.01.017': '7.17',
+            '71.00.01.024': '7.24',
+            '73.00.01.024': '73.24'
+        }
+        eebook = []
+        counter = 0
+        for trn in self.transactions:
+            if trn['is_ee']:
+                counter += 1
+                tval = tfpa = 0
+                tts = {}
+                typos = set()
+                accounts = set()
+                for lin in trn['lines']:
+                    if lin['account'][0] in '267':
+                        accounts.add(lin['account'])
+                        tval += ee_value_sign(lin)
+                        typos.add(lin['account'][0])
+                        ee_key = acs[lin['account']]
+                        tts[ee_key] = tts.get(ee_key, 0) + ee_value_sign(lin)
+                    elif lin['account'].startswith('54.00.'):
+                        tfpa += ee_value_sign(lin)
+                        ee_key = acs[lin['account']]
+                        tts[ee_key] = tts.get(ee_key, 0) + ee_value_sign(lin)
+                tts['typos'] = ''.join(sorted(list(typos)))
+                tts['id'] = counter
+                tts['date'] = trn['date']
+                tts['trimino'] = trimino(trn['date'])
+                tts['part'] = trn['partype']
+                tts['par'] = trn['parno']
+                tts['afm'] = trn['afm']
+                tts['per'] = trn['perigrafi']
+                tts['value'] = tval
+                tts['fpa'] = tfpa
+                tts['total'] = tval + tfpa
+                tts['accounts'] = accounts
+                eebook.append(tts)
+        return eebook
+
+    def ee_book2excel(self, filename='txt.xlsx'):
+        eecols = {
+            'id': 'αα',
+            'date': 'Ημ/νία',
+            'trimino': 'Τρίμηνο',
+            'afm': 'ΑΦΜ',
+            'par': 'Παρ/κό',
+            'per': 'Περιγραφή',
+            '7l.17': 'Πωλήσεις λιανικής ΦΠΑ 17%',
+            '7l.24': 'Πωλήσεις λιανικής ΦΠΑ 24%',
+            '7.17': 'Πωλήσεις χονδρικής ΦΠΑ 17%',
+            '7.24': 'Πωλήσεις χονδρικής ΦΠΑ 24%',
+            '7.00': 'Πωλήσεις χονδρικής χωρίς ΦΠΑ',
+            '73.24': 'Παροχή υπηρεσιών 24%',
+            '54.7': 'ΦΠΑ εσόδων',
+            '2.00': 'Ενδοκοινοτικές αποκτήσεις Α Υλών',
+            '2.24': 'Αγορές ΦΠΑ 24%',
+            '6.00': 'Έξοδα χωρίς ΦΠΑ',
+            '6.06':  'Έξοδα ΦΠΑ 6%',
+            '6.13': 'Έξοδα ΦΠΑ 13%',
+            '6.24': 'Έξοδα ΦΠΑ 24%',
+            '54.26': 'ΦΠΑ εξόδων'
+        }
+        wb = Workbook()
+        date_style = NamedStyle(name='datetime', number_format='YYYY-MM-DD')
+        sheet = wb.active
+        sheet.page_setup.orientation = sheet.ORIENTATION_LANDSCAPE
+        sheet.row_dimensions[1].height = 70
+        sheet.row_dimensions[1].font = Font(name='Liberation Sans', bold=True)
+        sheet.row_dimensions[1].alignment = Alignment(
+            wrap_text=True, vertical='center', horizontal='center')
+        for i, val in enumerate(eecols.values()):
+            sheet.cell(column=i+1, row=1, value=val)
+        for i, trn in enumerate(self.ee_bookd()):
+            # print(trn)
+            for j, ee_key in enumerate(eecols):
+                # print(trn[ee_key])
+                trn.get(ee_key, '')
+                sheet.cell(column=j+1, row=i+2, value=trn.get(ee_key, ''))
+        wb.save(filename)
+
     def myf_xml(self, exclude=None, only=None, koybas=(), rfpa=(), action='replace'):
         """
         Συγκεντρωτικές τιμολογίων πελατών/προμηθευτών σε xml
@@ -255,7 +387,7 @@ class Book:
             'gcash': [],
             'oexpenses': {}
         }
-        dat = '2019-12-31'
+        dat = '2020-12-31'
         di1 = {}
         di2 = {}
         di6 = {}

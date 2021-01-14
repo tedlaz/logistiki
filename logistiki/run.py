@@ -54,6 +54,10 @@ def main():
     eep.add_argument('-o', '--only', nargs='+',
                      help='Μόνο αυτοί οι κωδικοί')
 
+    # ee to try:
+    eex = subp.add_parser('ee2excell', help='Βιβλίο Εσόδων-Εξόδων σε excell')
+    eex.add_argument('-o', '--outfile', help='Αρχείο εξόδου')
+
     # logistiki
     imp = subp.add_parser('imerologio', help='Ημερολόγιο λογιστικής')
     imp.add_argument('-f', '--from', help='Από ημερομηνία')
@@ -114,7 +118,10 @@ def main():
     elif args.command == 'ee':
         book = prs.parse_all(dict(cfg['company']), cfg['parse']['file_path'])
         book.ee_book_report(exclude=args.exclude, only=args.only)
-        pass
+
+    elif args.command == 'ee2excell':
+        book = prs.parse_all(dict(cfg['company']), cfg['parse']['file_path'])
+        book.ee_book2excel(filename=args.outfile)
 
     elif args.command == 'imerologio':
         book = prs.parse_all(dict(cfg['company']), cfg['parse']['file_path'])
