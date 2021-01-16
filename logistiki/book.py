@@ -16,6 +16,15 @@ def trimino(isodate):
     return f"{yyy}{trim[mmm]}"
 
 
+def clean_per(per):
+    per = per.replace('-Τιμολόγιο Αγορών (Προμηθευτή)', '')
+    per = per.replace('-Τιμολόγιο Αγορών (Προμηθευτή', '')
+    per = per.replace('-Τιμολόγιο Πώλησης', '')
+    per = per.replace('- Δ.Α. Αγορών (Προμηθευτή)', '')
+    per = per.replace('-Πιστωτικό Τιμολόγιο Επιστροφής', '')
+    per = per.replace('-Δ.Αποστολής - Τιμολόγιο Πώλησης', '')
+    return per
+
 def ee_value_sign(acline):
     if acline['account'][0] in '126':
         if acline['typ'] == 1:
@@ -323,7 +332,7 @@ class Book:
                 tts['part'] = trn['partype']
                 tts['par'] = trn['parno']
                 tts['afm'] = trn['afm']
-                tts['per'] = trn['perigrafi']
+                tts['per'] = clean_per(trn['perigrafi'])
                 tts['value'] = tval
                 tts['fpa'] = tfpa
                 tts['total'] = tval + tfpa
