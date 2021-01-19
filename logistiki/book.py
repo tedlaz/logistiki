@@ -23,6 +23,9 @@ def clean_per(per):
     per = per.replace('- Δ.Α. Αγορών (Προμηθευτή)', '')
     per = per.replace('-Πιστωτικό Τιμολόγιο Επιστροφής', '')
     per = per.replace('-Δ.Αποστολής - Τιμολόγιο Πώλησης', '')
+    per = per.replace('-Δ.Αποστολής - Τιμολόγιο Πώλησ', '')
+    per = per.replace('-Πιστωτικό Τιμολόγιο - Δ.Α. Αγορών (Προμηθευ', '')
+    per = per.replace('-Δ.Αποστολής - Τιμολόγιο Πώ', '')
     return per
 
 def ee_value_sign(acline):
@@ -262,11 +265,47 @@ class Book:
         print(f"Κέρδος 7-2-6 : {tot7-tot6-tot2:>12} {fpa7-fpa6-fpa2:>12}")
         print('=' * 40)
 
-    def ee_bookd(self):
+    def _ee_bookd(self, el2ee):
         """
-        Βιβλίο εσόδων-εξόδων
+        Βιβλίο εσόδων-εξόδων για excell
         """
-        acs = {
+        eebook = []
+        counter = 0
+        for trn in self.transactions:
+            if trn['is_ee']:
+                counter += 1
+                tval = tfpa = 0
+                tts = {}
+                typos = set()
+                accounts = set()
+                for lin in trn['lines']:
+                    if lin['account'][0] in '267':
+                        accounts.add(lin['account'])
+                        tval += ee_value_sign(lin)
+                        typos.add(lin['account'][0])
+                        ee_key = el2ee[lin['account']]
+                        tts[ee_key] = tts.get(ee_key, 0) + ee_value_sign(lin)
+                    elif lin['account'].startswith('54.00.'):
+                        tfpa += ee_value_sign(lin)
+                        ee_key = el2ee[lin['account']]
+                        tts[ee_key] = tts.get(ee_key, 0) + ee_value_sign(lin)
+                tts['typos'] = ''.join(sorted(list(typos)))
+                tts['id'] = counter
+                tts['date'] = trn['date']
+                tts['trimino'] = trimino(trn['date'])
+                tts['part'] = trn['partype']
+                tts['par'] = trn['parno']
+                tts['afm'] = trn['afm']
+                tts['per'] = clean_per(trn['perigrafi'])
+                tts['value'] = tval
+                tts['fpa'] = tfpa
+                tts['total'] = tval + tfpa
+                tts['accounts'] = accounts
+                eebook.append(tts)
+        return eebook
+
+    def ee_book2excel(self, filename='txt.xlsx'):
+        el2ee = {
             '20.01.00.024': '2.24',
             '24.01.00.024': '2.24',
             '24.02.00.000': '2.00',
@@ -282,6 +321,11 @@ class Book:
             '54.00.71.117': '54.7',
             '54.00.71.124': '54.7',
             '54.00.73.024': '54.7',
+            '60.00.00.000': '6.00',
+            '60.00.03.000': '6.00',
+            '60.00.07.000': '6.00',
+            '60.03.00.000': '6.00',
+            '61.00.06.024': '6.24',
             '62.03.00.000': '6.00',
             '62.03.00.024': '6.24',
             '62.03.02.000': '6.00',
@@ -305,42 +349,6 @@ class Book:
             '71.00.01.024': '7.24',
             '73.00.01.024': '73.24'
         }
-        eebook = []
-        counter = 0
-        for trn in self.transactions:
-            if trn['is_ee']:
-                counter += 1
-                tval = tfpa = 0
-                tts = {}
-                typos = set()
-                accounts = set()
-                for lin in trn['lines']:
-                    if lin['account'][0] in '267':
-                        accounts.add(lin['account'])
-                        tval += ee_value_sign(lin)
-                        typos.add(lin['account'][0])
-                        ee_key = acs[lin['account']]
-                        tts[ee_key] = tts.get(ee_key, 0) + ee_value_sign(lin)
-                    elif lin['account'].startswith('54.00.'):
-                        tfpa += ee_value_sign(lin)
-                        ee_key = acs[lin['account']]
-                        tts[ee_key] = tts.get(ee_key, 0) + ee_value_sign(lin)
-                tts['typos'] = ''.join(sorted(list(typos)))
-                tts['id'] = counter
-                tts['date'] = trn['date']
-                tts['trimino'] = trimino(trn['date'])
-                tts['part'] = trn['partype']
-                tts['par'] = trn['parno']
-                tts['afm'] = trn['afm']
-                tts['per'] = clean_per(trn['perigrafi'])
-                tts['value'] = tval
-                tts['fpa'] = tfpa
-                tts['total'] = tval + tfpa
-                tts['accounts'] = accounts
-                eebook.append(tts)
-        return eebook
-
-    def ee_book2excel(self, filename='txt.xlsx'):
         eecols = {
             'id': 'αα',
             'date': 'Ημ/νία',
@@ -373,7 +381,7 @@ class Book:
             wrap_text=True, vertical='center', horizontal='center')
         for i, val in enumerate(eecols.values()):
             sheet.cell(column=i+1, row=1, value=val)
-        for i, trn in enumerate(self.ee_bookd()):
+        for i, trn in enumerate(self._ee_bookd(el2ee)):
             # print(trn)
             for j, ee_key in enumerate(eecols):
                 # print(trn[ee_key])
