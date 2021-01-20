@@ -16,6 +16,11 @@ def trimino(isodate):
     return f"{yyy}{trim[mmm]}"
 
 
+def date_iso2gr(iso_date):
+    yyyy, mmm, ddd = iso_date.split('-')
+    return f'{ddd}/{mmm}/{yyyy}'
+
+
 def clean_per(per):
     per = per.replace('-Τιμολόγιο Αγορών (Προμηθευτή)', '')
     per = per.replace('-Τιμολόγιο Αγορών (Προμηθευτή', '')
@@ -291,7 +296,7 @@ class Book:
                         tts[ee_key] = tts.get(ee_key, 0) + ee_value_sign(lin)
                 tts['typos'] = ''.join(sorted(list(typos)))
                 tts['id'] = counter
-                tts['date'] = trn['date']
+                tts['date'] = date_iso2gr(trn['date'])
                 tts['trimino'] = trimino(trn['date'])
                 tts['part'] = trn['partype']
                 tts['par'] = trn['parno']
