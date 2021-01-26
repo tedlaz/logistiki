@@ -279,19 +279,16 @@ class Book:
         for trn in self.transactions:
             if trn['is_ee']:
                 counter += 1
-                tval = tfpa = 0
                 tts = {}
                 typos = set()
                 accounts = set()
                 for lin in trn['lines']:
                     if lin['account'][0] in '267':
                         accounts.add(lin['account'])
-                        tval += ee_value_sign(lin)
                         typos.add(lin['account'][0])
                         ee_key = el2ee[lin['account']]
                         tts[ee_key] = tts.get(ee_key, 0) + ee_value_sign(lin)
                     elif lin['account'].startswith('54.00.'):
-                        tfpa += ee_value_sign(lin)
                         ee_key = el2ee[lin['account']]
                         tts[ee_key] = tts.get(ee_key, 0) + ee_value_sign(lin)
                 tts['typos'] = ''.join(sorted(list(typos)))
@@ -302,9 +299,6 @@ class Book:
                 tts['par'] = trn['parno']
                 tts['afm'] = trn['afm']
                 tts['per'] = clean_per(trn['perigrafi'])
-                tts['value'] = tval
-                tts['fpa'] = tfpa
-                tts['total'] = tval + tfpa
                 tts['accounts'] = accounts
                 eebook.append(tts)
         return eebook
@@ -344,7 +338,7 @@ class Book:
             '62.98.00.013': '6.13',
             '62.98.99.024': '6.24',
             '63.04.00.000': '6.00',
-            '64.00.00.000': '6.10',
+            '64.00.00.000': '6x.00',
             '64.00.02.024': '6.24',
             '64.01.00.000': '6.00',
             '64.01.00.024': '6.24',
@@ -357,8 +351,8 @@ class Book:
             '64.08.00.013': '6.13',
             '64.98.00.101': '6.00',
             '64.98.00.102': '6.00',
-            '65.04.00.000': '6.00',
-            '65.98.98.000': '6.00',
+            '65.04.00.000': '6t.00',
+            '65.98.98.000': '6t.00',
             '66.01.07.000': '6.00',
             '66.02.00.000': '6.00',
             '66.04.03.000': '6.00',
@@ -387,8 +381,9 @@ class Book:
             '54.7': 'ΦΠΑ εσόδων',
             '2.00': 'Ενδοκοινοτικές αποκτήσεις Α Υλών',
             '2.24': 'Αγορές ΦΠΑ 24%',
+            '6t.00': 'Έξοδα τραπεζών',
             '6.00': 'Έξοδα χωρίς ΦΠΑ',
-            '6.10': 'Έξοδα χωρίς δικαίωμα έκπτωσης ΦΠΑ',
+            '6x.00': 'Έξοδα χωρίς δικαίωμα έκπτωσης ΦΠΑ',
             '6.06':  'Έξοδα ΦΠΑ 6%',
             '6.13': 'Έξοδα ΦΠΑ 13%',
             '6.24': 'Έξοδα ΦΠΑ 24%',
