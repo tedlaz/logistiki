@@ -50,14 +50,14 @@ def create_xml(data):
             xtype=data['action'],
             data=''.join(greven.format(**i) for i in data['grevenues'])
         )
-        afms += [i['afm'] for i in data['grevenues']]
+        afms += [i['afm'] for i in data['grevenues'] if i['afm'].strip() != '']
 
     if data['gexpenses']:
         expenses = texps.format(
             xtype=data['action'],
             data=''.join(xlexpe.format(**i) for i in data['gexpenses'])
         )
-        afms += [i['afm'] for i in data['gexpenses']]
+        afms += [i['afm'] for i in data['gexpenses'] if i['afm'].strip() != '']
 
     if data['oexpenses']:
         other_expenses = tothe.format(**data['oexpenses'])
