@@ -6,7 +6,7 @@ from logistiki.logger import logger
 
 
 def trimino(isodate):
-    yyy, mmm, ddd = isodate.split('-')
+    yyy, mmm, _ = isodate.split('-')
     trim = {
         '01': '1', '02': '1', '03': '1',
         '04': '2', '05': '2', '06': '2',
