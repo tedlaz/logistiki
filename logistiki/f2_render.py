@@ -1,9 +1,10 @@
+# import os
 from logistiki.utils import dec
 from logistiki.logger import logger
-import os
+from logistiki.f2_html import F2_HTML
 
-dir_path = os.path.dirname(os.path.realpath(__file__))
-f2_template = os.path.join(dir_path, 'f2.html')
+# dir_path = os.path.dirname(os.path.realpath(__file__))
+# f2_template = os.path.join(dir_path, 'f2.html')
 
 F2CODES = [
     'apo', 'eos', 'epon', 'onom', 'patr', 'afm',
@@ -118,13 +119,13 @@ def pre_render(header, data):
     return adic
 
 
-def f2_render(head, data, html_file=None, template=f2_template):
+def f2_render(head, data, html_file=None):  #, template=f2_template):
     """
     Render data to html
     """
     f2data = pre_render(head, calculate_f2(data))
-    with open(template) as fil:
-        html_template = fil.read()
+    # with open(template) as fil:
+    #     html_template = fil.read()
     # Create and fill all form fields with ''
     html_data = {i: '' for i in F2CODES}
     # Fill fields from f2data
@@ -134,7 +135,7 @@ def f2_render(head, data, html_file=None, template=f2_template):
     # Finally save the form
     if html_file:
         with open(html_file, 'w') as fout:
-            fout.write(html_template.format(**html_data))
+            fout.write(F2_HTML.format(**html_data))
         logger.info(f'fpa report saved to file: {html_file}')
     else:
         print(html_data)
