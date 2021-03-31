@@ -201,31 +201,32 @@ class Book:
         eebook = []
         counter = 0
         for trn in self.transactions:
-            if trn['is_ee']:
-                counter += 1
-                tval = tfpa = 0
-                typos = set()
-                accounts = set()
-                for lin in trn['lines']:
-                    if lin['account'][0] in '267':
-                        accounts.add(lin['account'])
-                        tval += ee_value_sign(lin)
-                        typos.add(lin['account'][0])
-                    elif lin['account'].startswith('54.00.'):
-                        tfpa += ee_value_sign(lin)
-                eebook.append({
-                    'typos': ''.join(sorted(list(typos))),
-                    'id': counter,
-                    'date': trn['date'],
-                    'part': trn['partype'],
-                    'parno': trn['parno'],
-                    'afm': trn['afm'],
-                    'perigrafi': trn['perigrafi'],
-                    'value': tval,
-                    'fpa': tfpa,
-                    'total': tval + tfpa,
-                    'accounts': accounts
-                })
+            if not trn['is_ee']:
+                continue
+            counter += 1
+            tval = tfpa = 0
+            typos = set()
+            accounts = set()
+            for lin in trn['lines']:
+                if lin['account'][0] in '267':
+                    accounts.add(lin['account'])
+                    tval += ee_value_sign(lin)
+                    typos.add(lin['account'][0])
+                elif lin['account'].startswith('54.00.'):
+                    tfpa += ee_value_sign(lin)
+            eebook.append({
+                'typos': ''.join(sorted(list(typos))),
+                'id': counter,
+                'date': trn['date'],
+                'part': trn['partype'],
+                'parno': trn['parno'],
+                'afm': trn['afm'],
+                'perigrafi': trn['perigrafi'],
+                'value': tval,
+                'fpa': tfpa,
+                'total': tval + tfpa,
+                'accounts': accounts
+            })
         return eebook
 
     def ee_book_report(self, exclude=None, only=None):
@@ -466,7 +467,8 @@ class Book:
                     data['oexpenses']['date'] = data['oexpenses'].get(
                         'date', dat)
                     continue
-
+                if len(afm) < 9:
+                    raise ValueError(f"There is an error in {trn}")
                 # Διαφορετικά κανονικά ανά ΑΦΜ/normal-credit
                 di6[afm] = di6.get(afm, {})
                 if trn['value'] >= 0:

@@ -1,8 +1,7 @@
 #!/bin/bash
 
-zip -q plogistiki.zip logistiki/*.py logistiki/*.html __main__.py logistiki.ini 
+zip -q plogistiki.zip logistiki/*.py logistiki/*.html __main__.py logistiki.ini
 echo '#!/usr/bin/env python3' > plogistiki
 cat plogistiki.zip >> plogistiki
 chmod a+x plogistiki
 rm plogistiki.zip
-

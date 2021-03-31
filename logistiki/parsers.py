@@ -268,10 +268,12 @@ def parse_varius(ee_file, enc='WINDOWS-1253'):
     fil.close()
 
 
-def parse_all(co_data: dict, file_path: str) -> Book:
+def parse_all(config_parser) -> Book:
     """
     Τρέχουν όλοι οι parsers και παίρνουμε σαν έξοδο ένα βιβλίο λογιστικής
     """
+    co_data = dict(config_parser['company'])
+    file_path = config_parser['parse']['file_path']
     file_afm, file_ee, file_el = files_from_path(file_path)
     # print(file_afm, file_ee, file_el)
     afms = parse_afm(file_afm)

@@ -12,7 +12,7 @@ def myf(cfg, out_file):
     only = cfg['myf']['only'].split() or None
     koybas = cfg['myf']['koybas'].split() or ()
     rfpa = cfg['myf']['reversefpa'].split() or ()
-    book = prs.parse_all(dict(cfg['company']), cfg['parse']['file_path'])
+    book = prs.parse_all(cfg)
     # book.ee_book_report(exclude=exclude, only=only)
     data = book.myf_xml(
         exclude=exclude, only=only, koybas=koybas, rfpa=rfpa)
@@ -54,9 +54,9 @@ def main():
     eep.add_argument('-o', '--only', nargs='+',
                      help='Μόνο αυτοί οι κωδικοί')
 
-    # ee to try:
+    # ee to excell:
     eex = subp.add_parser('ee2excell', help='Βιβλίο Εσόδων-Εξόδων σε excell')
-    eex.add_argument('-o', '--outfile', help='Αρχείο εξόδου')
+    eex.add_argument('outfile', help='Αρχείο εξόδου')
 
     # logistiki
     imp = subp.add_parser('imerologio', help='Ημερολόγιο λογιστικής')
@@ -116,26 +116,26 @@ def main():
             check_afms(afm_list)
 
     elif args.command == 'ee':
-        book = prs.parse_all(dict(cfg['company']), cfg['parse']['file_path'])
+        book = prs.parse_all(cfg)
         book.ee_book_report(exclude=args.exclude, only=args.only)
 
     elif args.command == 'ee2excell':
-        book = prs.parse_all(dict(cfg['company']), cfg['parse']['file_path'])
+        book = prs.parse_all(cfg)
         book.ee_book2excel(filename=args.outfile)
 
     elif args.command == 'imerologio':
-        book = prs.parse_all(dict(cfg['company']), cfg['parse']['file_path'])
+        book = prs.parse_all(cfg)
         for trn in book.transactions:
             book.trans_print(trn['id'])
 
     elif args.command == 'isozygio':
-        book = prs.parse_all(dict(cfg['company']), cfg['parse']['file_path'])
+        book = prs.parse_all(cfg)
         fchart = cfg['accounts']['chart']
         chart = read_chart(fchart)
         print(book.isozygio(apo=args.apo, eos=args.eos, chart=chart))
 
     elif args.command == 'kartella':
-        book = prs.parse_all(dict(cfg['company']), cfg['parse']['file_path'])
+        book = prs.parse_all(cfg)
         print(book.kartella(args.account, apo=args.apo, eos=args.eos))
 
     elif args.command == 'myf':
