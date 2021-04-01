@@ -155,7 +155,7 @@ def printanalytic(xmlfile):
     print(fstr % ('Synola', val, vat, '', tim))
 
 
-def printmyf(xmlfile):
+def printmyf(xmlfile: str) -> None:
     myf = Myf(xmlfile)
     es, esf = myf.getpolt()
     esl, eslf = myf.getpolliant()

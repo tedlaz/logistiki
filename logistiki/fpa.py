@@ -4,31 +4,36 @@ from logistiki import parsers as prs
 from configparser import ConfigParser
 import argparse
 
-
-def fpa(apo, eos, outfile=None, ini_file='logistiki.ini'):
-    """
-    Για τον υπολογισμό του φπα χρησιμοποιούμε παραμέτρους από το αρχείο
-    logistiki.ini
-    """
-    cfg = ConfigParser()
-    cfg.read(ini_file)
-    # Εδώ δημιουργούμε το {'20.00.24': {363: 24}, ...}
-    fpas = dict(cfg['fpa'])
-    fpas = {el: fpas[el].split() for el in fpas}
-    acc_code_fpa = {}
-    for cod_fpa, vals in fpas.items():
+def reverse_fpa_dict(adict: dict) -> dict:
+    """Αντιστροφή του dict"""
+    reverse = {}
+    for cod_fpa, vals in adict.items():
         cod, fpa = cod_fpa.split('_')
         cod = int(cod)
         fpa = int(fpa)
         for val in vals:
-            acc_code_fpa[val] = acc_code_fpa.get(val, {})
-            acc_code_fpa[val][cod] = fpa
+            reverse[val] = reverse.get(val, {})
+            reverse[val][cod] = fpa
+    return reverse
+
+
+def fpa(cfg, args):  #apo, eos, outfile=None, ini_file='logistiki.ini'):
+    """
+    Για τον υπολογισμό του φπα χρησιμοποιούμε παραμέτρους από το αρχείο
+    logistiki.ini
+    """
+    # Εδώ δημιουργούμε το {'20.00.24': {363: 24}, ...}
+    fpas = dict(cfg['fpa'])
+    fpas = {el: fpas[el].split() for el in fpas}
+
+    acc_code_fpa = reverse_fpa_dict(fpas)
+
     codata = dict(cfg['company'])
-    codata['apo'] = date_iso2gr(apo)
-    codata['eos'] = date_iso2gr(eos)
+    codata['apo'] = date_iso2gr(args.apo)
+    codata['eos'] = date_iso2gr(args.eos)
     # Εδώ φορτώνουμε τα δεδομένα στο βιβλίο
-    book = prs.parse_all(dict(cfg['company']), cfg['parse']['file_path'])
-    isozygio = book.totals_for_fpa(apo, eos)
+    book = prs.parse_all(cfg)
+    isozygio = book.totals_for_fpa(args.apo, args.eos)
     fdata = {}
     fpad = {}
     for account, value in isozygio.items():
@@ -45,4 +50,4 @@ def fpa(apo, eos, outfile=None, ini_file='logistiki.ini'):
             fdata[cods+20] = fpa_value
     # DATA = {361: dec(95156.97), 303: dec(101119.21), 381: dec(100.34),
     #         306: dec(28529.25), 364: dec(1825.68), 349: dec(39527.90)}
-    f2_render(codata, fdata, outfile)
+    f2_render(codata, fdata, args.out)

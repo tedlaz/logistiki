@@ -46,7 +46,7 @@ def parse_acc_fpa(cfg):
 def check_fpa(cfg, threshold=0.01):
     acc_fpa = parse_acc_fpa(cfg)
 
-    book = prs.parse_all(dict(cfg['company']), cfg['parse']['file_path'])
+    book = prs.parse_all(cfg)
     errors = []
 
     for trn in book.transactions:

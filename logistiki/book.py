@@ -17,6 +17,8 @@ def trimino(isodate):
 
 
 def date_iso2gr(iso_date):
+    if iso_date == '' or iso_date is None:
+        return ''
     yyyy, mmm, ddd = iso_date.split('-')
     return f'{ddd}/{mmm}/{yyyy}'
 
@@ -99,25 +101,20 @@ class Book:
         """
         Ισοζύγιο λογαριασμών
         """
-        dapo = apo if apo else '1900-01-01'
-        deos = eos if eos else '3000-12-31'
-        if dapo > deos:
-            dapo = deos
         iso = {}
         txr = tpi = typ = 0
-        for tra in self.transactions:
-            if dapo <= tra['date'] <= deos:
-                for lin in tra['lines']:
-                    debit = lin['value'] if lin['typ'] == 1 else 0
-                    credit = lin['value'] if lin['typ'] == 2 else 0
-                    gcode = lin['account']
-                    iso[gcode] = iso.get(
-                        gcode, {'debit': dec(0), 'credit': dec(0)})
-                    iso[gcode]['debit'] += debit
-                    iso[gcode]['credit'] += credit
-                    txr += debit
-                    tpi += credit
-                    typ += debit - credit
+        for tra in self.filter_by_dates(apo, eos):
+            for lin in tra['lines']:
+                debit = lin['value'] if lin['typ'] == 1 else 0
+                credit = lin['value'] if lin['typ'] == 2 else 0
+                gcode = lin['account']
+                iso[gcode] = iso.get(
+                    gcode, {'debit': dec(0), 'credit': dec(0)})
+                iso[gcode]['debit'] += debit
+                iso[gcode]['credit'] += credit
+                txr += debit
+                tpi += credit
+                typ += debit - credit
         fiso = {}
         apot = 0
         for code, val in iso.items():
@@ -128,14 +125,8 @@ class Book:
                 fiso[lcode]['credit'] += val['credit']
             if code[0] in '267':
                 apot += val['debit'] - val['credit']
-        if apo:
-            tapo = f' Από: {date_iso2gr(dapo)}'
-        else:
-            tapo = ''
-        if eos:
-            teos = f' Έως: {date_iso2gr(deos)}'
-        else:
-            teos = ''
+        tapo = f' Από: {date_iso2gr(apo)}'
+        teos = f' Έως: {date_iso2gr(eos)}'
         tapoeos = f'{tapo}{teos}'
         tmp = f"\n{'ΙΣΟΖΥΓΙΟ ΛΟΓΙΣΤΙΚΗΣ':^104}\n"
         tmp += f"{tapoeos:^104}\n"
@@ -159,32 +150,35 @@ class Book:
         )
         return tmp
 
+    def filter_by_dates(self, apo: str, eos: str):
+        for transaction in self.transactions:
+            if apo and transaction['date'] < apo:
+                continue
+            if eos and transaction['date'] > eos:
+                continue
+            yield transaction
+
     def totals_for_fpa(self, apo, eos):
         """
         Ισοζύγιο ειδικά για τον υπολογισμό του ΦΠΑ
         """
-        dapo = apo if apo else '1900-01-01'
-        deos = eos if eos else '3000-12-31'
-        if dapo > deos:
-            dapo = deos
         iso = {}
         fpa_delta = 0
-        for tra in self.transactions:
-            if dapo <= tra['date'] <= deos:
-                for lin in tra['lines']:
-                    account = lin['account']
-                    if account.startswith('54.00'):
-                        if not account.startswith('54.00.99'):
-                            fpa_delta += lin['value'] if lin['typ'] == 1 else - \
-                                lin['value']
-                    if account[0] not in '1267':
-                        continue
-                    iso[account] = iso.get(account, dec(0))
-                    if account[0] in '126':
-                        iso[account] += lin['value'] if lin['typ'] == 1 else -lin['value']
-                    elif account[0] == '7':
-                        iso[account] += lin['value'] if lin['typ'] == 2 else - \
+        for tra in self.filter_by_dates(apo, eos):
+            for lin in tra['lines']:
+                account = lin['account']
+                if account.startswith('54.00'):
+                    if not account.startswith('54.00.99'):
+                        fpa_delta += lin['value'] if lin['typ'] == 1 else - \
                             lin['value']
+                if account[0] not in '1267':
+                    continue
+                iso[account] = iso.get(account, dec(0))
+                if account[0] in '126':
+                    iso[account] += lin['value'] if lin['typ'] == 1 else -lin['value']
+                elif account[0] == '7':
+                    iso[account] += lin['value'] if lin['typ'] == 2 else - \
+                        lin['value']
         iso[5400] = fpa_delta
         return iso
 

@@ -26,7 +26,8 @@ def myf(cfg, out_file):
             print(f"Το αρχείο {out_file} δημιουργήθηκε επιτυχώς !!!")
 
 
-def main():
+def command_line_args_parser():
+    """Parse command line arguments"""
     parser = argparse.ArgumentParser('logistiki.run')
     parser.add_argument('-i', '--inifile', default='logistiki.ini')
     parser.add_argument('-v', '--version', action='version',
@@ -95,8 +96,12 @@ def main():
     xmlchkp = subp.add_parser(
         'xmlchk', help='Έλεγχος αρχείου xml συγκεντρωτικής')
     xmlchkp.add_argument('xml_file', help='Αρχείο xml για έλεγχο')
+    return parser
 
-    args = parser.parse_args()
+
+def main():
+    args_parser = command_line_args_parser()
+    args = args_parser.parse_args()
 
     if args.debug:
         print("debug: " + str(args))
@@ -143,7 +148,8 @@ def main():
 
     elif args.command == 'fpa':
         from logistiki.fpa import fpa
-        fpa(args.apo, args.eos, args.out)
+        # fpa(args.apo, args.eos, args.out)
+        fpa(cfg, args)
 
     elif args.command == 'fpachk':
         from logistiki.fpa_check import check_fpa
@@ -154,7 +160,7 @@ def main():
         printmyf(args.xml_file)
 
     else:
-        parser.print_help()
+        args_parser.print_help()
 
 
 if __name__ == '__main__':
