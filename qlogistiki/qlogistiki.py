@@ -162,20 +162,23 @@ class Dialog(qw.QWidget):
 
 
 class MainWindow(qw.QMainWindow):
-    def __init__(self, filename=None):
+    def __init__(self):
         super().__init__()
         self.setAttribute(qc.Qt.WA_DeleteOnClose)
         self.settings = qc.QSettings()
         self.setMinimumSize(1600, 800)
-        # self.isUntitled = True
-        self.fnam = filename
         self.createMenus()
-        if self.fnam:
-            self.init_vals(self.fnam)
-        else:
-            self.fnam = self.settings.value("filename", defaultValue=None)
-            if self.fnam:
-                self.init_vals(self.fnam)
+        self.fnam = self.get_filename()
+
+    def get_filename(self):
+        filename = self.settings.value("filename", defaultValue=None)
+        if filename:
+            if os.path.isfile(filename):
+                self.init_vals(filename)
+                return filename
+            else:
+                self.setWindowTitle(f'Το {filename} δεν είναι διαθέσιμο')
+        return None
 
     def init_vals(self, filename):
         self.dlg = Dialog(filename, self)
@@ -197,12 +200,12 @@ class MainWindow(qw.QMainWindow):
             self.settings.setValue("filename", fnam)
 
 
-def main(filename=None):
+def main():
     app = qw.QApplication(sys.argv)
     app.setOrganizationName("TedLazaros")
     app.setOrganizationDomain("Tedlaz")
     app.setApplicationName("qlogistiki")
-    dlg = MainWindow(filename)
+    dlg = MainWindow()
     dlg.show()
     sys.exit(app.exec_())
 
