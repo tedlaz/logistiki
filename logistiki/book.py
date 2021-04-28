@@ -400,14 +400,17 @@ class Book:
         sheet.row_dimensions[1].font = Font(name='Liberation Sans', bold=True)
         sheet.row_dimensions[1].alignment = Alignment(
             wrap_text=True, vertical='center', horizontal='center')
+
         for i, val in enumerate(eecols.values()):
             sheet.cell(column=i+1, row=1, value=val)
+
         for i, trn in enumerate(self._ee_bookd(el2ee)):
             # print(trn)
             for j, ee_key in enumerate(eecols):
                 # print(trn[ee_key])
                 trn.get(ee_key, '')
                 sheet.cell(column=j+1, row=i+2, value=trn.get(ee_key, ''))
+
         wb.save(filename)
 
     def myf_xml(self, exclude=None, only=None, koybas=(), rfpa=(), action='replace'):
