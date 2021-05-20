@@ -4,7 +4,7 @@ from qlogistiki.dec import Dec
 
 
 class TransactionLine:
-    __slots__ = ['account', 'value', 'sxolio']
+    __slots__ = ["account", "value", "sxolio"]
 
     def __init__(self, account, value, sxolio=""):
         self.account = Account(account)
@@ -44,17 +44,12 @@ class TransactionLine:
 
     def __add__(self, other):
         if self.account.name != other.account.name:
-            raise ValueError('For addition accounts must me the same')
-        return TransactionLine(
-            self.account.name, self.value + other.value
-        )
+            raise ValueError("For addition accounts must me the same")
+        return TransactionLine(self.account.name, self.value + other.value)
 
     def __repr__(self):
         return (
-            "TransactionLine("
-            f"account={self.account!r}, "
-            f"value={self.value!r}"
-            ")"
+            "TransactionLine(" f"account={self.account!r}, " f"value={self.value!r}" ")"
         )
 
     def __str__(self):

@@ -4,11 +4,12 @@ from logistiki import parsers as prs
 from configparser import ConfigParser
 import argparse
 
+
 def reverse_fpa_dict(adict: dict) -> dict:
     """Αντιστροφή του dict"""
     reverse = {}
     for cod_fpa, vals in adict.items():
-        cod, fpa = cod_fpa.split('_')
+        cod, fpa = cod_fpa.split("_")
         cod = int(cod)
         fpa = int(fpa)
         for val in vals:
@@ -17,20 +18,20 @@ def reverse_fpa_dict(adict: dict) -> dict:
     return reverse
 
 
-def fpa(cfg, args):  #apo, eos, outfile=None, ini_file='logistiki.ini'):
+def fpa(cfg, args):  # apo, eos, outfile=None, ini_file='logistiki.ini'):
     """
     Για τον υπολογισμό του φπα χρησιμοποιούμε παραμέτρους από το αρχείο
     logistiki.ini
     """
     # Εδώ δημιουργούμε το {'20.00.24': {363: 24}, ...}
-    fpas = dict(cfg['fpa'])
+    fpas = dict(cfg["fpa"])
     fpas = {el: fpas[el].split() for el in fpas}
 
     acc_code_fpa = reverse_fpa_dict(fpas)
 
-    codata = dict(cfg['company'])
-    codata['apo'] = date_iso2gr(args.apo)
-    codata['eos'] = date_iso2gr(args.eos)
+    codata = dict(cfg["company"])
+    codata["apo"] = date_iso2gr(args.apo)
+    codata["eos"] = date_iso2gr(args.eos)
     # Εδώ φορτώνουμε τα δεδομένα στο βιβλίο
     book = prs.parse_all(cfg)
     isozygio = book.totals_for_fpa(args.apo, args.eos)
@@ -47,7 +48,7 @@ def fpa(cfg, args):  #apo, eos, outfile=None, ini_file='logistiki.ini'):
     for cods in [361, 362, 363, 364, 365, 366]:
         fpa_value = fpad.get(cods, dec(0))
         if fpa_value != 0:  # Για να αποφύγω τις μηδενικές τιμές
-            fdata[cods+20] = fpa_value
+            fdata[cods + 20] = fpa_value
     # DATA = {361: dec(95156.97), 303: dec(101119.21), 381: dec(100.34),
     #         306: dec(28529.25), 364: dec(1825.68), 349: dec(39527.90)}
     f2_render(codata, fdata, args.out)

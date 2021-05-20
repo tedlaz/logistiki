@@ -2,8 +2,8 @@ from qlogistiki.book import Book
 
 
 class Partner:
-    partner_type = 'unknown'
-    default_status = 'MIXED'
+    partner_type = "unknown"
+    default_status = "MIXED"
 
     def __init__(self, afm, name, country):
         self.afm = afm
@@ -27,12 +27,7 @@ class Partner:
         pass
 
     def __str__(self):
-        return (
-            f"{self.afm} "
-            f"{self.name} "
-            f"{self.country} "
-            f"{self.account}"
-        )
+        return f"{self.afm} " f"{self.name} " f"{self.country} " f"{self.account}"
 
     def __repr__(self):
         return (
@@ -43,54 +38,54 @@ class Partner:
 
 
 class Customer(Partner):
-    partner_type = 'Πελάτης'
-    default_status = 'DEBIT'
-    account = 'Πελάτες'
+    partner_type = "Πελάτης"
+    default_status = "DEBIT"
+    account = "Πελάτες"
 
 
 class CustomerGreece(Customer):
-    account = 'Πελάτες.Εσωτερικού'
+    account = "Πελάτες.Εσωτερικού"
 
     def __init__(self, afm, name):
-        super().__init__(afm, name, 'Ελλάδα')
+        super().__init__(afm, name, "Ελλάδα")
 
     def in_myf(self):
         return True
 
 
 class CustomerEuro(Customer):
-    account = 'Πελάτες.Ενδοκοινοτικοί'
+    account = "Πελάτες.Ενδοκοινοτικοί"
 
     def in_intrastat(self):
         return True
 
 
 class CustomerAbroad(Customer):
-    account = 'Πελάτες.Εξωτερικού'
+    account = "Πελάτες.Εξωτερικού"
 
 
 class Vendor(Partner):
-    partner_type = 'Προμηθευτής'
-    default_status = 'CREDIT'
-    account = 'Προμηθευτές'
+    partner_type = "Προμηθευτής"
+    default_status = "CREDIT"
+    account = "Προμηθευτές"
 
 
 class VendorGreece(Vendor):
-    account = 'Προμηθευτές.Εσωτερικού'
+    account = "Προμηθευτές.Εσωτερικού"
 
     def in_myf(self):
         return True
 
 
 class VendorEuro(Vendor):
-    account = 'Προμηθευτές.Ενδοκοινοτικοί'
+    account = "Προμηθευτές.Ενδοκοινοτικοί"
 
     def in_intrastat(self):
         return True
 
 
 class VendorAbroad(Vendor):
-    account = 'Προμηθευτές.Εξωτερικού'
+    account = "Προμηθευτές.Εξωτερικού"
 
 
 class Enterprise:

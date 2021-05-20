@@ -1,7 +1,5 @@
-
-
 class Dec:
-    __slots__ = ['fval']
+    __slots__ = ["fval"]
 
     def __init__(self, val=0) -> None:
         if isinstance(val, Dec):
@@ -73,7 +71,7 @@ class Dec:
         return self.fval >= Dec(other).fval
 
     def __repr__(self):
-        return f'Dec({self.fval:.2f})'
+        return f"Dec({self.fval:.2f})"
 
     def __str__(self):
         return self.gr
@@ -83,7 +81,7 @@ class Dec:
 
     @classmethod
     def from_gr(cls, val):
-        return cls(val.replace('.', '').replace(',', '.'))
+        return cls(val.replace(".", "").replace(",", "."))
 
     @property
     def gr0(self):
@@ -93,8 +91,8 @@ class Dec:
         123456.70 becomes '123.456,70'
         123456.00 becomes '123.456,00'
         """
-        eform = f'{self.fval:,.2f}'
-        return eform.replace('.', '|').replace(',', '.').replace('|', ',')
+        eform = f"{self.fval:,.2f}"
+        return eform.replace(".", "|").replace(",", ".").replace("|", ",")
 
     @property
     def gr(self):
@@ -105,31 +103,31 @@ class Dec:
         123456.00 becomes '123.456,00'
         """
         if self == 0:
-            return ''
-        eform = f'{self.fval:,.2f}'
-        return eform.replace('.', '|').replace(',', '.').replace('|', ',')
+            return ""
+        eform = f"{self.fval:,.2f}"
+        return eform.replace(".", "|").replace(",", ".").replace("|", ",")
 
     @property
     def grs(self):
         """Greek formated
-            0         becomes       '0   '
-            123456.00 becomes '123.456   '
-            123456.70 becomes '123.456,7 '
-            123456.78 becomes '123.456,78'
+        0         becomes       '0   '
+        123456.00 becomes '123.456   '
+        123456.70 becomes '123.456,7 '
+        123456.78 becomes '123.456,78'
         """
         if self == 0:
-            return '0   '
-        ivl, dvl = f'{self.fval:,.2f}'.split('.')
+            return "0   "
+        ivl, dvl = f"{self.fval:,.2f}".split(".")
         dlist = list(dvl)
-        coma = ','
-        if dlist[1] == '0':
-            dlist[1] = ' '
-            if dlist[0] == '0':
-                dlist[0] = ' '
-                coma = ' '
-        finalint = ivl.replace(',', '.')
+        coma = ","
+        if dlist[1] == "0":
+            dlist[1] = " "
+            if dlist[0] == "0":
+                dlist[0] = " "
+                coma = " "
+        finalint = ivl.replace(",", ".")
         return finalint + coma + dlist[0] + dlist[1]
 
     @property
     def uid(self):
-        return f'{self.fval:.2f}'.replace('.', '')
+        return f"{self.fval:.2f}".replace(".", "")

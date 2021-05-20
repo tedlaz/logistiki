@@ -2,20 +2,19 @@ from collections import namedtuple
 from operator import attrgetter
 from qlogistiki.data_manager_abstract import AbstractDataManager
 
-Tdata = namedtuple('Tdata', 'id title url notes date_added')
+Tdata = namedtuple("Tdata", "id title url notes date_added")
 
 
 class DataManager(AbstractDataManager):
-
-    def __init__(self, file_name='test.txt'):
+    def __init__(self, file_name="test.txt"):
         # {r.id:5} {r.title:20} {r.url} {r.notes}
         self.data = {}
         self.filename = file_name
         id_ = 0
         try:
-            with open(file_name, encoding='utf8') as fil:
+            with open(file_name, encoding="utf8") as fil:
                 for line in fil.readlines():
-                    id_, title, url, notes, date_added = line.strip().split('|')
+                    id_, title, url, notes, date_added = line.strip().split("|")
                     id_ = int(id_)
                     self.data[id_] = Tdata(id_, title, url, notes, date_added)
         except Exception:
@@ -26,10 +25,10 @@ class DataManager(AbstractDataManager):
         self.lastrowid += 1
         self.data[self.lastrowid] = Tdata(
             self.lastrowid,
-            data['title'],
-            data['url'],
-            data['notes'],
-            data['date_added']
+            data["title"],
+            data["url"],
+            data["notes"],
+            data["date_added"],
         )
 
     def read(self, order_by):
@@ -43,8 +42,10 @@ class DataManager(AbstractDataManager):
         del self.data[int(id_)]
 
     def make_permanent(self):
-        text_lines = ''
+        text_lines = ""
         for lin in self.data.values():
-            text_lines += f'{lin.id}|{lin.title}|{lin.url}|{lin.notes}|{lin.date_added}\n'
-        with open(self.filename, 'w', encoding='utf8') as fil:
+            text_lines += (
+                f"{lin.id}|{lin.title}|{lin.url}|{lin.notes}|{lin.date_added}\n"
+            )
+        with open(self.filename, "w", encoding="utf8") as fil:
             fil.write(text_lines)

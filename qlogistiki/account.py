@@ -3,9 +3,11 @@ Class Account
 """
 
 
-class Account():
-    splitter = '.'
-    __slots__ = ['name', ]
+class Account:
+    splitter = "."
+    __slots__ = [
+        "name",
+    ]
 
     def __init__(self, name):
         self.name = name
@@ -23,10 +25,10 @@ class Account():
         return lvls
 
     def __repr__(self):
-        return f'Account(name={self.name!r})'
+        return f"Account(name={self.name!r})"
 
     def __str__(self):
-        return f'{self.name}'
+        return f"{self.name}"
 
     def __format__(self, format_spec):
-        return f'{self.name:{format_spec}}'
+        return f"{self.name:{format_spec}}"

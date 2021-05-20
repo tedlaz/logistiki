@@ -2,9 +2,9 @@ import logging
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
-fmt = '%(asctime)s|%(filename)s:%(lineno)d(%(levelname)s)> %(message)s'
+fmt = "%(asctime)s|%(filename)s:%(lineno)d(%(levelname)s)> %(message)s"
 formatter = logging.Formatter(fmt)
-file_handler = logging.FileHandler('logistiki.log')
+file_handler = logging.FileHandler("logistiki.log")
 file_handler.setFormatter(formatter)
 file_handler.setLevel(logging.INFO)
 logger.addHandler(file_handler)

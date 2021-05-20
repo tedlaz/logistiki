@@ -3,7 +3,7 @@ from qlogistiki.book import Book
 from qlogistiki.parser_text import parse
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
-bfile = os.path.join(dir_path, 'booktst.txt')
+bfile = os.path.join(dir_path, "booktst.txt")
 
 
 def test_book_creation():

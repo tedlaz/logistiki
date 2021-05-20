@@ -5,7 +5,7 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 
 
 def test_parser_text_001():
-    book_data = os.path.join(dir_path, 'booktst.txt')
+    book_data = os.path.join(dir_path, "booktst.txt")
     afm, name, trans, valids, accounts, anoigma = parse(book_data)
     # print('\n', valids, trans[0])
     assert sum(accounts.values()) == 0

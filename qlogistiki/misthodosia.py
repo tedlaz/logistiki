@@ -21,8 +21,8 @@ class Parousies:
 
 @dataclass
 class Astheneia:
-    apo: str = ''
-    eos: str = ''
+    apo: str = ""
+    eos: str = ""
     meres_eos3: int = 0
     meres_more3: int = 0
 
@@ -43,13 +43,13 @@ class Kratisi:
 
     def __add__(self, other):
         return Kratisi(
-            f'{self.name}+{other.name}',
+            f"{self.name}+{other.name}",
             self.ergazomenos + other.ergazomenos,
-            self.ergodotis + other.ergodotis
+            self.ergodotis + other.ergodotis,
         )
 
     def __str__(self):
-        return f'Kratisi(name={self.name!r}, ergazomenos={self.ergazomenos}, ergodotis={self.ergodotis}, total={self.total})'
+        return f"Kratisi(name={self.name!r}, ergazomenos={self.ergazomenos}, ergodotis={self.ergodotis}, total={self.total})"
 
 
 class CalcKratisi:
@@ -60,7 +60,7 @@ class CalcKratisi:
         raise NotImplementedError
 
     def __repr__(self):
-        return f'CalcKratisi(name={self.name!r})'
+        return f"CalcKratisi(name={self.name!r})"
 
 
 class CalcKratisiPososto(CalcKratisi):
@@ -81,10 +81,9 @@ class CalcKratisiPososto(CalcKratisi):
 
 
 class Mis:
-    __slots__ = ['meres', 'adeia_meres',
-                 'nyxta_ores', 'argia_ores', 'argia_meres']
-    pnyxta = .20
-    pargia = .75
+    __slots__ = ["meres", "adeia_meres", "nyxta_ores", "argia_ores", "argia_meres"]
+    pnyxta = 0.20
+    pargia = 0.75
 
     def __init__(self, parousies: Parousies, kratiseis):
         self.par = parousies
@@ -92,7 +91,7 @@ class Mis:
         self.calculate()
 
     def __repr__(self):
-        return f'Mis({self.__dict__})'
+        return f"Mis({self.__dict__})"
 
     def calc_apodoxes_normal(self):
         raise NotImplementedError

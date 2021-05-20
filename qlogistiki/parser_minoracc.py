@@ -13,27 +13,24 @@ def parser_minoracc(filename):
     accounts = set()
     with open(filename) as fil:
         for line in fil:
-            if line.startswith('*'):
+            if line.startswith("*"):
                 continue
             if len(line) < 14:
                 continue
-            date, apo, se, poso, per = line.split('|')
+            date, apo, se, poso, per = line.split("|")
             date = date.strip()
             apo = fix_account(apo.strip())
             se = fix_account(se.strip())
-            poso = Decimal(poso.strip().replace(',', '.'))
+            poso = Decimal(poso.strip().replace(",", "."))
             per = per.strip()
             accounts.add(apo)
             accounts.add(se)
             trn = {
-                'date': date,
-                'par': '',
-                'per': per,
-                'afm': '',
-                'lines': [
-                    {'acc': se, 'val': poso},
-                    {'acc': apo, 'val': -poso}
-                ]
+                "date": date,
+                "par": "",
+                "per": per,
+                "afm": "",
+                "lines": [{"acc": se, "val": poso}, {"acc": apo, "val": -poso}],
             }
             trans.append(trn)
     accounts_list = list(accounts)

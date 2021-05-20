@@ -3,7 +3,7 @@ from collections import namedtuple
 
 
 def test_001():
-    head = ('Επώνυμο', 'Ονομα')
+    head = ("Επώνυμο", "Ονομα")
     # ctyp = (1, 1)
     # cala = (1, 1)
     # Erg = namedtuple('Erg', 'epo ono')

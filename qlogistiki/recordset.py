@@ -17,13 +17,13 @@ class Recordset:
         self.calign = column_aligment
         self.data = data if data else []
         self.typ = typ
-        self.db = ''
+        self.db = ""
 
     def new_row(self, obj):
         if isinstance(obj, self.typ):
             self.data.append(obj)
         else:
-            raise ValueError(f'object {obj} is not of type {self.typ}')
+            raise ValueError(f"object {obj} is not of type {self.typ}")
 
     def add_may_rows(self, listofobj):
         self.data += listofobj

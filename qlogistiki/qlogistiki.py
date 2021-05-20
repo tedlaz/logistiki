@@ -66,7 +66,7 @@ class Dialog(qw.QWidget):
         super().__init__(parent)
         self.parent = parent
         self.book = None
-        self.checked_account = ''
+        self.checked_account = ""
         if os.path.isfile(filename):
             self.book = dot.load_from_text(filename)
         mainlayout = qw.QVBoxLayout()
@@ -116,17 +116,25 @@ class Dialog(qw.QWidget):
         # self.sbar.some_acc_clicked.connect(self.refresh_model)
         self.iso.clicked.connect(self.refresh_model_from_iso)
         self.iso.activated.connect(self.refresh_model_from_iso)
-        # self.tbl.doubleClicked.connect(self.model_rowdata)
+        self.tbl.doubleClicked.connect(self.show_arthro)
+
+    def show_arthro(self, val):
+        fixed_font = qg.QFontDatabase.systemFont(qg.QFontDatabase.FixedFont)
+        num = val.sibling(val.row(), 0).data()
+        tr1 = self.book.get_transaction(num)
+        qw.QMessageBox.information(self, f"Αρθρο {num}", tr1.as_str())
 
     def validate_ypoloipa(self):
-        correct_no, err = self.book.validate()
-        errm = '\n'.join(err)
-        message = f'Number of correct checks: {correct_no}\n'
+        correct_no, err, cor = self.book.validate()
+        errm = "\n".join(err)
+        corm = "\n".join(cor)
+        message = f"Number of correct checks: {correct_no}\n"
+        message += corm + "\n"
         if err:
-            message += f'Errors:\n{errm}'
+            message += f"Errors:\n{errm}"
         else:
-            message += 'No errors :-)'
-        qw.QMessageBox.about(self, 'Validations', message)
+            message += "No errors :-)"
+        qw.QMessageBox.about(self, "Validations", message)
 
     def refresh_model_from_iso(self, acc):
         """
@@ -137,10 +145,16 @@ class Dialog(qw.QWidget):
         if account == self.checked_account:
             return
         self.checked_account = account
-        lred_color = ('Εξοδα', 'Αγορές', 'Προμηθευτές',
-                      'Πιστωτές', 'ΦΠΑ', 'Εργαζόμενοι')
-        lgreen_color = ('Πωλήσεις', 'Πελάτες', 'Εσοδα', 'Χρεώστες')
-        lblue_color = ('Ταμείο', 'Μετρητά')
+        lred_color = (
+            "Εξοδα",
+            "Αγορές",
+            "Προμηθευτές",
+            "Πιστωτές",
+            "ΦΠΑ",
+            "Εργαζόμενοι",
+        )
+        lgreen_color = ("Πωλήσεις", "Πελάτες", "Εσοδα", "Χρεώστες")
+        lblue_color = ("Ταμείο", "Μετρητά")
         if account.startswith(lred_color):
             self.tbl.setStyleSheet("alternate-background-color: #FFDEE3;")
         elif account.startswith(lgreen_color):
@@ -177,7 +191,7 @@ class MainWindow(qw.QMainWindow):
                 self.init_vals(filename)
                 return filename
             else:
-                self.setWindowTitle(f'Το {filename} δεν είναι διαθέσιμο')
+                self.setWindowTitle(f"Το {filename} δεν είναι διαθέσιμο")
         return None
 
     def init_vals(self, filename):
@@ -186,15 +200,13 @@ class MainWindow(qw.QMainWindow):
 
     def createMenus(self):
         self.openAct = qw.QAction(
-            'Open',
-            self,
-            statusTip='Open file',
-            triggered=self.open)
+            "Open", self, statusTip="Open file", triggered=self.open
+        )
         self.filemenu = self.menuBar().addMenu("&File")
         self.filemenu.addAction(self.openAct)
 
     def open(self):
-        fnam, _ = qw.QFileDialog.getOpenFileName(self, 'Open', self.fnam, '')
+        fnam, _ = qw.QFileDialog.getOpenFileName(self, "Open", self.fnam, "")
         if fnam:
             self.init_vals(fnam)
             self.settings.setValue("filename", fnam)

@@ -7,15 +7,67 @@ from logistiki.f2_html import F2_HTML
 # f2_template = os.path.join(dir_path, 'f2.html')
 
 F2CODES = [
-    'apo', 'eos', 'epon', 'onom', 'patr', 'afm',
-    'i301', 'i302', 'i303', 'i304', 'i305', 'i306', 'i307',
-    'i331', 'i332', 'i333', 'i334', 'i335', 'i336', 'i337',
-    'i361', 'i362', 'i363', 'i364', 'i365', 'i366', 'i367',
-    'i381', 'i382', 'i383', 'i384', 'i385', 'i386', 'i387',
-    'i342', 'i345', 'i348', 'i349', 'i310', 'i311', 'i312',
-    'i400', 'i402', 'i407', 'i410', 'i411', 'i422', 'i423', 'i428', 'i430',
-    'i470', 'i401', 'i403', 'i404', 'i502', 'i503',
-    'i480', 'i483', 'i505', 'i511', 'i523'
+    "apo",
+    "eos",
+    "epon",
+    "onom",
+    "patr",
+    "afm",
+    "i301",
+    "i302",
+    "i303",
+    "i304",
+    "i305",
+    "i306",
+    "i307",
+    "i331",
+    "i332",
+    "i333",
+    "i334",
+    "i335",
+    "i336",
+    "i337",
+    "i361",
+    "i362",
+    "i363",
+    "i364",
+    "i365",
+    "i366",
+    "i367",
+    "i381",
+    "i382",
+    "i383",
+    "i384",
+    "i385",
+    "i386",
+    "i387",
+    "i342",
+    "i345",
+    "i348",
+    "i349",
+    "i310",
+    "i311",
+    "i312",
+    "i400",
+    "i402",
+    "i407",
+    "i410",
+    "i411",
+    "i422",
+    "i423",
+    "i428",
+    "i430",
+    "i470",
+    "i401",
+    "i403",
+    "i404",
+    "i502",
+    "i503",
+    "i480",
+    "i483",
+    "i505",
+    "i511",
+    "i523",
 ]
 
 
@@ -32,12 +84,12 @@ def sumd(dic, sumkeys):
 
 
 def dec2str(val):
-    '''
+    """
     Returns string with Greek Formatted decimal (12345.67 becomes 12.345,67)
-    '''
+    """
     if val == 0:
-        return ''
-    return f'{val:,.2f}'.replace('.', '|').replace(',', '.').replace('|', ',')
+        return ""
+    return f"{val:,.2f}".replace(".", "|").replace(",", ".").replace("|", ",")
 
 
 def calculate_f2(dat):
@@ -49,12 +101,12 @@ def calculate_f2(dat):
     for elm in range(301, 307):
         adi[elm] = dat.get(elm, dec(0))
     adi[307] = sumd(adi, range(301, 307))
-    adi[331] = dec(adi[301] * dec(.13))
-    adi[332] = dec(adi[302] * dec(.06))
-    adi[333] = dec(adi[303] * dec(.24))
-    adi[334] = dec(adi[304] * dec(.09))
-    adi[335] = dec(adi[305] * dec(.04))
-    adi[336] = dec(adi[306] * dec(.17))
+    adi[331] = dec(adi[301] * dec(0.13))
+    adi[332] = dec(adi[302] * dec(0.06))
+    adi[333] = dec(adi[303] * dec(0.24))
+    adi[334] = dec(adi[304] * dec(0.09))
+    adi[335] = dec(adi[305] * dec(0.04))
+    adi[336] = dec(adi[306] * dec(0.17))
     adi[337] = sumd(adi, range(331, 337))
     # Λοιπές εκροές
     adi[342] = dat.get(342, dec(0))
@@ -109,17 +161,17 @@ def pre_render(header, data):
     """
     Prepare data
     """
-    adic = {'i%s' % key: dec2str(data[key]) for key in data}
-    adic['apo'] = header.get('apo', '')
-    adic['eos'] = header.get('eos', '')
-    adic['epon'] = header.get('name', '')
-    adic['onom'] = header.get('onom', '')
-    adic['patr'] = header.get('patr', '')
-    adic['afm'] = header.get('afm', '')
+    adic = {"i%s" % key: dec2str(data[key]) for key in data}
+    adic["apo"] = header.get("apo", "")
+    adic["eos"] = header.get("eos", "")
+    adic["epon"] = header.get("name", "")
+    adic["onom"] = header.get("onom", "")
+    adic["patr"] = header.get("patr", "")
+    adic["afm"] = header.get("afm", "")
     return adic
 
 
-def f2_render(head, data, html_file=None):  #, template=f2_template):
+def f2_render(head, data, html_file=None):  # , template=f2_template):
     """
     Render data to html
     """
@@ -127,27 +179,29 @@ def f2_render(head, data, html_file=None):  #, template=f2_template):
     # with open(template) as fil:
     #     html_template = fil.read()
     # Create and fill all form fields with ''
-    html_data = {i: '' for i in F2CODES}
+    html_data = {i: "" for i in F2CODES}
     # Fill fields from f2data
     for key, val in f2data.items():
         if key in html_data.keys():
             html_data[key] = val
     # Finally save the form
     if html_file:
-        with open(html_file, 'w') as fout:
+        with open(html_file, "w") as fout:
             fout.write(F2_HTML.format(**html_data))
-        logger.info(f'fpa report saved to file: {html_file}')
+        logger.info(f"fpa report saved to file: {html_file}")
     else:
         print(html_data)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # print(render_f2({'epon': 'ΛΑΖΑΡΟΣ'}, 'skata.html'))
-    HEAD = {
-        'epon': 'ΔΟΚΙΜΗ ΕΠΕ', 'afm': '123123123',
-        'apo': '1/2019', 'eos': '3/2019'
-    }
+    HEAD = {"epon": "ΔΟΚΙΜΗ ΕΠΕ", "afm": "123123123", "apo": "1/2019", "eos": "3/2019"}
     # data = {301: 100, 303: 1500, 361: 1500, 381: 360, 401: 100, 364: 100, }
-    DATA = {361: dec(95156.97), 303: dec(101119.21),
-            306: dec(28529.25), 364: dec(1825.68), 349: dec(39527.90)}
+    DATA = {
+        361: dec(95156.97),
+        303: dec(101119.21),
+        306: dec(28529.25),
+        364: dec(1825.68),
+        349: dec(39527.90),
+    }
     f2_render(HEAD, DATA)

@@ -5,22 +5,31 @@ from qlogistiki.account import Account
 from qlogistiki.transaction_line import TransactionLine
 
 DEBIT, CREDIT = 1, 2
-decr = {1: 'Χρέωση', 2: 'Πίστωση'}
+decr = {1: "Χρέωση", 2: "Πίστωση"}
 # 0: Χωρίς ΦΠΑ, 1: ΦΠΑ οκ, 2: ΦΠΑ λάθος
 NOFPA, FPAOK, FPAERROR = 0, 1, 2
-fpastatus = {0: 'Χωρίς ΦΠΑ', 1: 'ΦΠΑ οκ', 2: 'ΦΠΑ λάθος'}
-Trl = namedtuple('Trl', 'date par per afm acc typos val')
+fpastatus = {0: "Χωρίς ΦΠΑ", 1: "ΦΠΑ οκ", 2: "ΦΠΑ λάθος"}
+Trl = namedtuple("Trl", "date par per afm acc typos val")
 
 
 class Transaction:
     """
     Class dealing with transactions
     """
-    cid = 0
-    __slots__ = ['id', 'date', 'parastatiko', 'perigrafi',
-                 'afm', 'delta', 'lines', 'fpa_status']
 
-    def __init__(self, date: str, parastatiko: str, perigrafi: str, afm=''):
+    cid = 0
+    __slots__ = [
+        "id",
+        "date",
+        "parastatiko",
+        "perigrafi",
+        "afm",
+        "delta",
+        "lines",
+        "fpa_status",
+    ]
+
+    def __init__(self, date: str, parastatiko: str, perigrafi: str, afm=""):
         self.__class__.cid += 1
         self.id = self.cid
         self.date = date
@@ -33,8 +42,16 @@ class Transaction:
 
     def lines_full(self):
         full_lines = [
-            Trl(self.date, self.parastatiko, self.perigrafi,
-                self.afm, l.account, l.typos, l.value) for l in self.lines
+            Trl(
+                self.date,
+                self.parastatiko,
+                self.perigrafi,
+                self.afm,
+                l.account,
+                l.typos,
+                l.value,
+            )
+            for l in self.lines
         ]
         return full_lines
 
@@ -43,11 +60,11 @@ class Transaction:
         """
         Generate a unique id
         """
-        date_part = self.date.replace('-', '')
+        date_part = self.date.replace("-", "")
         afm_part = self.afm  # or '000000000'
-        parastatiko_part = self.parastatiko.replace(' ', '')
+        parastatiko_part = self.parastatiko.replace(" ", "")
         val_part = self.total.uid
-        return f'{date_part}{afm_part}{parastatiko_part}{val_part}'
+        return f"{date_part}{afm_part}{parastatiko_part}{val_part}"
 
     @property
     def number_of_lines(self) -> int:
@@ -72,16 +89,18 @@ class Transaction:
                     per = self.perigrafi + ", " + line.sxolio
                 else:
                     per = self.perigrafi
-                running_sum['total'] += line.value
-                found.append((
-                    self.id,
-                    self.date,
-                    self.parastatiko,
-                    per,
-                    line.debit,
-                    line.credit,
-                    running_sum['total']
-                ))
+                running_sum["total"] += line.value
+                found.append(
+                    (
+                        self.id,
+                        self.date,
+                        self.parastatiko,
+                        per,
+                        line.debit,
+                        line.credit,
+                        running_sum["total"],
+                    )
+                )
 
     def add_line(self, account: str, value, sxolio=""):
         new_line = TransactionLine(account, value, sxolio)
@@ -94,14 +113,14 @@ class Transaction:
 
     def add_last_line(self, account, sxolio=""):
         if self.delta == 0:
-            raise ValueError(f'Transaction {self} is already balanced')
+            raise ValueError(f"Transaction {self} is already balanced")
         new_line = TransactionLine(account, -self.delta, sxolio)
         self.lines.append(new_line)
 
     @property
     def last_account(self) -> Account:
         if self.number_of_lines == 0:
-            raise ValueError('Impossible value')
+            raise ValueError("Impossible value")
         return self.lines[-1].account
 
     @property
@@ -111,7 +130,7 @@ class Transaction:
         return self.lines[-1].delta
 
     def __repr__(self) -> str:
-        lins = ','.join([repr(lin) for lin in self.lines])
+        lins = ",".join([repr(lin) for lin in self.lines])
         return (
             "Transaction("
             f"date={self.date!r}, "
@@ -128,16 +147,19 @@ class Transaction:
         stt = f'{self.date} "{self.parastatiko}" "{self.perigrafi}" {self.afm}\n'
         for i, lin in enumerate(self.lines):
             if self.number_of_lines == i + 1:
-                stt += f'  {lin.account.name}\n'
+                stt += f"  {lin.account.name}\n"
             else:
-                tlin = f'  {lin.account.name:<{maxnam}} {lin.delta.gr0:>14}'
-                stt += tlin.rstrip() + '\n'
+                if lin.sxolio:
+                    tlin = f"  {lin.account.name:<{maxnam}} {lin.delta.gr0:>14} # {lin.sxolio}"
+                else:
+                    tlin = f"  {lin.account.name:<{maxnam}} {lin.delta.gr0:>14}"
+                stt += tlin.rstrip() + "\n"
         return stt
 
     def __str__(self) -> str:
-        ast = f'\n{self.date} {self.parastatiko} {self.perigrafi} {self.afm}\n'
+        ast = f"\n{self.date} {self.parastatiko} {self.perigrafi} {self.afm}\n"
         for lin in self.lines:
-            ast += f'  {lin}\n'
+            ast += f"  {lin}\n"
         return ast
 
     def __eq__(self, oth):

@@ -7,12 +7,12 @@ def test_new_from_delta():
 
 
 def test_transaction_01():
-    tr1 = trn.Transaction('2020-01-10', '', 'Σουπερμαρκετ πόπη')
-    tr1.add_line('agores 24%', 100)
-    tr1.add_line('fpa 24%', 24)
-    tr1.add_last_line('promitheftes')
+    tr1 = trn.Transaction("2020-01-10", "", "Σουπερμαρκετ πόπη")
+    tr1.add_line("agores 24%", 100)
+    tr1.add_line("fpa 24%", 24)
+    tr1.add_last_line("promitheftes")
     # print('\n', tr1.as_str())
     # print(tr1)
-    assert tr1.uid == '2020011012400'
-    tr1.afm = '123123123'
-    assert tr1.uid == '2020011012312312312400'
+    assert tr1.uid == "2020011012400"
+    tr1.afm = "123123123"
+    assert tr1.uid == "2020011012312312312400"

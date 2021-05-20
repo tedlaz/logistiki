@@ -1,12 +1,14 @@
 from collections import namedtuple
 from dataclasses import dataclass
+
 # from decimal import Decimal
 import qlogistiki.transaction as trs
 from qlogistiki.utils import account_tree
 from qlogistiki.dec import Dec
+
 OUT, HEAD, LINE = 0, 1, 2
-fpa_prefix = 'ΦΠΑ'
-ValPoint = namedtuple('ValPoint', 'date account delta')
+fpa_prefix = "ΦΠΑ"
+ValPoint = namedtuple("ValPoint", "date account delta")
 
 
 @dataclass
@@ -18,6 +20,7 @@ class ModelValues:
     sizes   : gird width for fields
     values  : list of records
     """
+
     headers: tuple
     aligns: tuple
     types: tuple
@@ -26,8 +29,14 @@ class ModelValues:
 
 
 class Book:
-    __slots__ = ['afm', 'company_name',
-                 'transactions', 'validations', 'accounts', 'anoigma']
+    __slots__ = [
+        "afm",
+        "company_name",
+        "transactions",
+        "validations",
+        "accounts",
+        "anoigma",
+    ]
 
     def __init__(self, afm, company, trans: list, vals, accounts, anoigma):
         self.afm = afm
@@ -37,27 +46,37 @@ class Book:
         self.accounts = accounts
         self.anoigma = anoigma
 
+    def get_transaction(self, idv):
+        if idv <= len(self.transactions):
+            return self.transactions[idv - 1]
+        return None
+
     def arthro_anoigmatos(self):
         if not self.anoigma:
             return
-        tran = trs.Transaction('2000-01-01', 'Λογ.Εγγρ.', 'Ανοιγμα')
+        tran = trs.Transaction("2000-01-01", "Λογ.Εγγρ.", "Ανοιγμα")
         for alin in self.anoigma:
             tran.add_line(alin.account, alin.value)
-        tran.add_last_line('Ανοιγμα')
+        tran.add_last_line("Ανοιγμα")
         return tran
 
     def validate(self):
         errors = []
         correct_checks = 0
+        correct = []
         for vpoint in self.validations:
             ypol = self.ypoloipo(vpoint.account, vpoint.date)
             diafora = ypol - vpoint.delta
             if diafora == 0:
                 correct_checks += 1
+                correct.append(
+                    f"{vpoint.date}: {vpoint.account:30} {vpoint.delta:>14} ok"
+                )
             else:
                 errors.append(
-                    f'{vpoint.date}: {vpoint.account:30} {ypol:>14}-> {diafora}')
-        return correct_checks, errors
+                    f"{vpoint.date}: {vpoint.account:30} {vpoint.delta:>14} != {ypol}"
+                )
+        return correct_checks, errors, correct
 
     def max_account_name(self):
         if self.accounts:
@@ -112,14 +131,20 @@ class Book:
                     )
 
     def kartella_model(self, account: str, max_vals=20000) -> ModelValues:
-        rsum = 0
-        headers = ('id', "Ημερομηνία", 'Παρ/κό', "Περιγραφή",
-                   "Χρέωση", "Πίστωση", "Υπόλοιπο")
+        headers = (
+            "id",
+            "Ημερομηνία",
+            "Παρ/κό",
+            "Περιγραφή",
+            "Χρέωση",
+            "Πίστωση",
+            "Υπόλοιπο",
+        )
         align = (0, 1, 1, 1, 3, 3, 3)
         typos = (0, 0, 0, 0, 1, 1, 1)
         sizes = (50, 110, 80, 600, 80, 80, 95)
         vals = []
-        running_sum = {'total': 0}
+        running_sum = {"total": 0}
         for trn in sorted(self.transactions):
             trn.get_lines_by_account(account, running_sum, vals)
         vals.reverse()
@@ -185,6 +210,17 @@ class Book:
                     accounts[acc] += line.delta
         return accounts
 
+    def isozygio_delta_low_level(self):
+        accounts = {}
+        for trn in self.transactions:
+            for line in trn.lines:
+                laccount = line.account
+                if trn.afm:
+                    laccount = trs.Account(f"{line.account.name}.{trn.afm}")
+                accounts[laccount.name] = accounts.get(laccount.name, 0)
+                accounts[laccount.name] += line.delta
+        return accounts
+
     def isozygio_model(self) -> ModelValues:
         # print(self.check_uid())
         lmoi = self.isozygio_delta()
@@ -222,8 +258,8 @@ class Book:
             if tran.fpa_status == 2:
                 fpa_errors.append(tran)
         if fpa_errors:
-            print('Υπάρχουν λάθη σε εγγραφές ΦΠΑ')
-            print('\n'.join(fpa_errors))
+            print("Υπάρχουν λάθη σε εγγραφές ΦΠΑ")
+            print("\n".join(fpa_errors))
         else:
             print("Δεν υπάρχουν λάθη σε εγγραφές με ΦΠΑ")
 
