@@ -4,11 +4,12 @@ from qlogistiki.dec import Dec
 
 
 class TransactionLine:
-    __slots__ = ['account', 'value']
+    __slots__ = ['account', 'value', 'sxolio']
 
-    def __init__(self, account, value):
+    def __init__(self, account, value, sxolio=""):
         self.account = Account(account)
         self.value = Dec(value)
+        self.sxolio = sxolio.strip()
 
     @property
     def debit(self) -> Dec:

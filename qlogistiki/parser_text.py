@@ -67,7 +67,9 @@ def parse(file):
 
         # Γραμμή λεπτομέρειας
         elif rline[:2] == '  ':  # Line detail
-            account, *txtval = rline.split()
+            accval, *sxolio = rline.split('#')
+            sxolio = sxolio[0] if sxolio else ""
+            account, *txtval = accval.split()
             val = gr2dec(txtval[0]) if txtval else 0
             # Εδώ δημιουργείται αυτόματα ο λογαριασμός ΦΠΑ
             if account == fpa_prefix:
@@ -79,11 +81,11 @@ def parse(file):
                 if abs(val - calfpa) > 0.01:
                     trn.fpa_status = 2
             if val:
-                trn.add_line(account, val)
+                trn.add_line(account, val, sxolio)
                 tran_total += val
             else:
                 val = -tran_total
-                trn.add_last_line(account)
+                trn.add_last_line(account, sxolio)
             accounts[account] += val
         else:  # Υπάρχουν γραμμές που ξεκινούν με μη αποδεκτό χαρακτήρα
             pass

@@ -68,19 +68,23 @@ class Transaction:
     def get_lines_by_account(self, account_part, running_sum, found):
         for line in self.lines:
             if line.account.name.startswith(account_part):
+                if line.sxolio:
+                    per = self.perigrafi + ", " + line.sxolio
+                else:
+                    per = self.perigrafi
                 running_sum['total'] += line.value
                 found.append((
                     self.id,
                     self.date,
                     self.parastatiko,
-                    self.perigrafi,
+                    per,
                     line.debit,
                     line.credit,
                     running_sum['total']
                 ))
 
-    def add_line(self, account: str, value):
-        new_line = TransactionLine(account, value)
+    def add_line(self, account: str, value, sxolio=""):
+        new_line = TransactionLine(account, value, sxolio)
         self.lines.append(new_line)
         self.delta += new_line.delta
 
@@ -88,10 +92,10 @@ class Transaction:
         self.add_line(acc1, value)
         self.add_line(acc2, value * pososto / 100)
 
-    def add_last_line(self, account):
+    def add_last_line(self, account, sxolio=""):
         if self.delta == 0:
             raise ValueError(f'Transaction {self} is already balanced')
-        new_line = TransactionLine(account, -self.delta)
+        new_line = TransactionLine(account, -self.delta, sxolio)
         self.lines.append(new_line)
 
     @property
