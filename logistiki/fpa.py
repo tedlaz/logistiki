@@ -51,4 +51,6 @@ def fpa(cfg, args):  # apo, eos, outfile=None, ini_file='logistiki.ini'):
             fdata[cods + 20] = fpa_value
     # DATA = {361: dec(95156.97), 303: dec(101119.21), 381: dec(100.34),
     #         306: dec(28529.25), 364: dec(1825.68), 349: dec(39527.90)}
+    if args.ypo:
+        fdata[401] = dec(args.ypo)
     f2_render(codata, fdata, args.out)

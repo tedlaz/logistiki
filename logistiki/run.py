@@ -82,6 +82,7 @@ def command_line_args_parser():
     fpap.add_argument("-f", "--apo", help="Από ημερομηνία")
     fpap.add_argument("-t", "--eos", help="Έως ημερομηνία")
     fpap.add_argument("-o", "--out", help="Αρχείο για αποθήκευση")
+    fpap.add_argument("-y", "--ypo", help="Πιστωτικό υπόλοιπο")
 
     # fpachk
     fpachkp = subp.add_parser("fpachk", help="Ελεγχος αναλυτικός εγγραφών με ΦΠΑ")
