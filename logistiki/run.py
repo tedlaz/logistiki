@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import os
 from configparser import ConfigParser
 import argparse
 import sys
@@ -101,7 +102,10 @@ def main():
         print("debug: " + str(args))
 
     cfg = ConfigParser()
-    cfg.read(args.inifile)
+    if os.path.exists(args.inifile):
+        cfg.read(args.inifile)
+    else:
+        raise FileNotFoundError
 
     if args.command == "afm":
         from logistiki.afm import check_afms
