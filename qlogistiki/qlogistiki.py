@@ -180,7 +180,7 @@ class MainWindow(qw.QMainWindow):
         super().__init__()
         self.setAttribute(qc.Qt.WA_DeleteOnClose)
         self.settings = qc.QSettings()
-        self.setMinimumSize(1600, 800)
+        self.setMinimumSize(1300, 700)
         self.createMenus()
         self.fnam = self.get_filename()
 
