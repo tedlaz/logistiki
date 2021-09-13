@@ -21,7 +21,7 @@ def parse(file):
     accounts = defaultdict(Decimal)
     tran_total = 0
 
-    with open(file) as fil:
+    with open(file, encoding='utf8') as fil:
         lines = fil.read().split("\n")
 
     for line in lines:
