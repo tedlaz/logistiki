@@ -1,6 +1,6 @@
 # from collections import defaultdict
 from abc import ABC, abstractmethod
-from qlogistiki.utils import grup
+from .utils import grup
 
 
 class ColumnType(ABC):
@@ -161,9 +161,11 @@ class Document:
 
     def add_linetype(self, linetype) -> None:
         if linetype.prefix in self.linetypes.keys():
-            raise ValueError(f"Linetype with code={linetype.prefix!r} already exists")
+            raise ValueError(
+                f"Linetype with code={linetype.prefix!r} already exists")
         if linetype.name in self.linetype_names:
-            raise ValueError(f"Linetype with name={linetype.name!r} already exists")
+            raise ValueError(
+                f"Linetype with name={linetype.name!r} already exists")
         self.linetypes[linetype.prefix] = linetype
 
     @property
@@ -224,7 +226,8 @@ class Document:
         return as1
 
     def with_greek_lbl(self):
-        lst = [self.linetypes[i["line_code"]].with_greek_lbl(i) for i in self.lines]
+        lst = [self.linetypes[i["line_code"]].with_greek_lbl(
+            i) for i in self.lines]
         return "\n".join(lst)
 
     def render2file(self, filename):
@@ -355,7 +358,8 @@ def apd_builder():
     li3.add_col(Col("eisf_asfalismenoy", "ΕΙΣΦΟΡΕΣ ΑΣΦΑΛΙΣΜ.", ColPoso(), 10))
     li3.add_col(Col("eisf_ergodoti", "ΕΙΣΦΟΡΕΣ ΕΡΓΟΔΟΤΗ", ColPoso(), 10))
     li3.add_col(Col("eisf_total", "ΣΥΝΟΛΙΚΕΣ ΕΙΣΦΟΡΕΣ", ColPoso(), 11))
-    li3.add_col(Col("epid_asfalismenoy_poso", "ΕΠΙΔΟΤ.ΑΣΦΑΛ.(ΠΟΣΟ)", ColPoso(), 10))
+    li3.add_col(Col("epid_asfalismenoy_poso",
+                "ΕΠΙΔΟΤ.ΑΣΦΑΛ.(ΠΟΣΟ)", ColPoso(), 10))
     li3.add_col(Col("epid_ergodoti_pososto", "ΕΠΙΔΟΤ.ΕΡΓΟΔ.(%)", ColPoso(), 5))
     li3.add_col(Col("epid_ergodoti_poso", "ΕΙΔΟΤ.ΕΡΓΟΔ.(ΠΟΣΟ)", ColPoso(), 10))
     li3.add_col(Col("katablitees_eisfores", "ΚΑΤΑΒΛ.ΕΙΣΦΟΡΕΣ", ColPoso(), 11))

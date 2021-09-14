@@ -30,7 +30,8 @@ def check_afms(afm_list):
         print(f"{rsp['vatNumber']} {rsp['valid']} {rsp['name']}")
 
     with open("validated_afms.txt", "w") as fil:
-        fil.write("\n".join([f"{i['vatNumber']} {i['name']}" for i in responses]))
+        fil.write(
+            "\n".join([f"{i['vatNumber']} {i['name']}" for i in responses]))
 
     if afm_err:
         afm_err_file = "zzz_afm_errors.txt"

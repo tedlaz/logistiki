@@ -33,7 +33,8 @@ def command_line_args_parser():
     parser.add_argument(
         "-v", "--version", action="version", version="logistiki.run version:1.0"
     )
-    parser.add_argument("--debug", action="store_true", help="Print debug info")
+    parser.add_argument("--debug", action="store_true",
+                        help="Print debug info")
     subp = parser.add_subparsers(dest="command")
 
     # afm
@@ -86,10 +87,12 @@ def command_line_args_parser():
     fpap.add_argument("-y", "--ypo", help="Πιστωτικό υπόλοιπο")
 
     # fpachk
-    fpachkp = subp.add_parser("fpachk", help="Ελεγχος αναλυτικός εγγραφών με ΦΠΑ")
+    fpachkp = subp.add_parser(
+        "fpachk", help="Ελεγχος αναλυτικός εγγραφών με ΦΠΑ")
 
     # xmlchk
-    xmlchkp = subp.add_parser("xmlchk", help="Έλεγχος αρχείου xml συγκεντρωτικής")
+    xmlchkp = subp.add_parser(
+        "xmlchk", help="Έλεγχος αρχείου xml συγκεντρωτικής")
     xmlchkp.add_argument("xml_file", help="Αρχείο xml για έλεγχο")
     return parser
 
@@ -103,9 +106,9 @@ def main():
 
     cfg = ConfigParser()
     if os.path.exists(args.inifile):
-        cfg.read(args.inifile)
+        cfg.read(args.inifile, encoding='UTF-8')
     else:
-        raise FileNotFoundError
+        raise FileNotFoundError("logistiki.ini file does not exist")
 
     if args.command == "afm":
         from logistiki.afm import check_afms

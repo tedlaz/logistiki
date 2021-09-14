@@ -3,8 +3,8 @@ from dataclasses import dataclass
 
 # from decimal import Decimal
 import qlogistiki.transaction as trs
-from qlogistiki.utils import account_tree
-from qlogistiki.dec import Dec
+from .utils import account_tree
+from .dec import Dec
 
 OUT, HEAD, LINE = 0, 1, 2
 fpa_prefix = "ΦΠΑ"

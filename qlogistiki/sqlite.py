@@ -15,10 +15,14 @@ def namedtuple_factory(cursor, row):
 
 
 class DataManager:
-    def __init__(self, dbf=None):
-        self.db = dbf
-        self.connection = None
+    def __init__(self, dbf: str = None):
+        if dbf is None:
+            self.db = ":memory:"
+        else:
+            self.db = dbf
         self.lastrowid = 0
+        self.connection = sqlite3.connect(self.db)
+        self.connection.row_factory = namedtuple_factory
 
     def __del__(self):
         if self.connection:
@@ -28,17 +32,6 @@ class DataManager:
         if self.connection is not None:
             self.connection.close()
 
-    def connect(self):
-        if self.connection:
-            return
-        if self.db is None:
-            self.db = ":memory:"
-        try:
-            self.connection = sqlite3.connect(self.db)
-            self.connection.row_factory = namedtuple_factory
-        except Exception as e:
-            print(e)
-
     def attach_function(self, function):
         fname = function.__name__
         argno = function.__code__.co_argcount  # Number of arguments
@@ -46,7 +39,6 @@ class DataManager:
             self.connection.create_function(fname, argno, function)
 
     def _execute(self, sql, parameters=None):
-        self.connect()
         with self.connection:
             cursor = self.connection.cursor()
             cursor.execute(sql, parameters or [])

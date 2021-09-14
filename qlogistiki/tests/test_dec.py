@@ -33,11 +33,7 @@ def test_dec_round_01():
     assert Dec("123.4554") == 123.46
 
 
-def test_dec_round_01():
-    assert Dec("123.4554") == 123.46
-
-
-def test_dec_round_01():
+def test_dec_round_02():
     assert Dec("-123.4554") == -123.46
 
 

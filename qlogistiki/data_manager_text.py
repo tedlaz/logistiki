@@ -1,6 +1,6 @@
 from collections import namedtuple
 from operator import attrgetter
-from qlogistiki.data_manager_abstract import AbstractDataManager
+from .data_manager_abstract import AbstractDataManager
 
 Tdata = namedtuple("Tdata", "id title url notes date_added")
 

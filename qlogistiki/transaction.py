@@ -1,8 +1,8 @@
 from collections import namedtuple, defaultdict
 from decimal import Decimal
-from qlogistiki.dec import Dec
-from qlogistiki.account import Account
-from qlogistiki.transaction_line import TransactionLine
+from .dec import Dec
+from .account import Account
+from .transaction_line import TransactionLine
 
 DEBIT, CREDIT = 1, 2
 decr = {1: "Χρέωση", 2: "Πίστωση"}
@@ -63,7 +63,7 @@ class Transaction:
         date_part = self.date.replace("-", "")
         afm_part = self.afm  # or '000000000'
         parastatiko_part = self.parastatiko.replace(" ", "")
-        val_part = self.total.uid
+        val_part = str(self.total).replace(',', '')
         return f"{date_part}{afm_part}{parastatiko_part}{val_part}"
 
     @property

@@ -1,6 +1,6 @@
-from qlogistiki.utils import dec
-from qlogistiki.account import Account
-from qlogistiki.dec import Dec
+from .utils import dec
+from .account import Account
+from .dec import Dec
 
 
 class TransactionLine:

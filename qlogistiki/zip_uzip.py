@@ -15,7 +15,7 @@ class ZipProcessor:
         self.zip_files()
 
     def process_files(self):
-        raise NotImplemented("Has to be implemented on child")
+        raise NotImplementedError("Has to be implemented on child")
 
     def unzip_files(self):
         self.temp_directory.mkdir()
@@ -39,7 +39,8 @@ class ZipReplace(ZipProcessor):
         for filename in self.temp_directory.iterdir():
             with filename.open() as fil:
                 contents = fil.read()
-            contents = contents.replace(self.search_string, self.replace_string)
+            contents = contents.replace(
+                self.search_string, self.replace_string)
             with filename.open("w") as fil:
                 fil.write(contents)
 

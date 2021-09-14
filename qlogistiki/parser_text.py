@@ -1,7 +1,7 @@
 from decimal import Decimal
 from collections import namedtuple, defaultdict
-from qlogistiki.utils import gr2dec
-from qlogistiki.transaction import Transaction
+from .utils import gr2dec
+from .transaction import Transaction
 
 ValPoint = namedtuple("ValPoint", "date account delta")
 Anoigma = namedtuple("Anoigma", "date account value")
@@ -12,7 +12,7 @@ def parse(file):
     """
     Parser for accounting text files
     """
-    trn = None
+    trn = Transaction("1000-01-01", "", "", "")
     company_afm = ""
     company_name = ""
     transactions = []

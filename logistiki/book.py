@@ -119,7 +119,8 @@ class Book:
                 debit = lin["value"] if lin["typ"] == 1 else 0
                 credit = lin["value"] if lin["typ"] == 2 else 0
                 gcode = lin["account"]
-                iso[gcode] = iso.get(gcode, {"debit": dec(0), "credit": dec(0)})
+                iso[gcode] = iso.get(
+                    gcode, {"debit": dec(0), "credit": dec(0)})
                 iso[gcode]["debit"] += debit
                 iso[gcode]["credit"] += credit
                 txr += debit
@@ -129,7 +130,8 @@ class Book:
         apot = 0
         for code, val in iso.items():
             for lcode in levels_reverse(code):
-                fiso[lcode] = fiso.get(lcode, {"debit": dec(0), "credit": dec(0)})
+                fiso[lcode] = fiso.get(
+                    lcode, {"debit": dec(0), "credit": dec(0)})
                 fiso[lcode]["debit"] += val["debit"]
                 fiso[lcode]["credit"] += val["credit"]
             if code[0] in "267":
@@ -178,7 +180,8 @@ class Book:
                 account = lin["account"]
                 if account.startswith("54.00"):
                     if not account.startswith("54.00.99"):
-                        fpa_delta += lin["value"] if lin["typ"] == 1 else -lin["value"]
+                        fpa_delta += lin["value"] if lin["typ"] == 1 else - \
+                            lin["value"]
                 if account[0] not in "1267":
                     continue
                 iso[account] = iso.get(account, dec(0))
@@ -333,6 +336,7 @@ class Book:
             "60.00.03.000": "6.00",
             "60.00.07.000": "6.00",
             "60.03.00.000": "6.00",
+            "61.00.00.024": "6.00",
             "61.00.06.024": "6.24",
             "62.03.00.000": "6.00",
             "62.03.00.024": "6.24",
@@ -365,6 +369,7 @@ class Book:
             "66.04.03.000": "6.00",
             "70.00.00.024": "7l.24",
             "70.00.01.024": "7.24",
+            "70.02.00.000": "7e.00",
             "71.00.00.017": "7l.17",
             "71.00.00.024": "7l.24",
             "71.00.01.000": "7.00",
@@ -384,6 +389,7 @@ class Book:
             "7.17": "Πωλήσεις χονδρικής ΦΠΑ 17%",
             "7.24": "Πωλήσεις χονδρικής ΦΠΑ 24%",
             "7.00": "Πωλήσεις χονδρικής χωρίς ΦΠΑ",
+            "7e.00": "Πωλήσεις Ενδοκοινοτικές",
             "73.24": "Παροχή υπηρεσιών 24%",
             "54.7": "ΦΠΑ εσόδων",
             "2.00": "Ενδοκοινοτικές αποκτήσεις Α Υλών",
@@ -474,11 +480,13 @@ class Book:
 
                 # Προμηθευτές σε κουβά (πχ ΔΕΗ)
                 if afm in koybas:
-                    data["oexpenses"]["amount"] = data["oexpenses"].get("amount", 0)
+                    data["oexpenses"]["amount"] = data["oexpenses"].get(
+                        "amount", 0)
                     data["oexpenses"]["amount"] += trn["value"]
                     data["oexpenses"]["tax"] = data["oexpenses"].get("tax", 0)
                     data["oexpenses"]["tax"] += trn["fpa"]
-                    data["oexpenses"]["date"] = data["oexpenses"].get("date", dat)
+                    data["oexpenses"]["date"] = data["oexpenses"].get(
+                        "date", dat)
                     continue
                 if len(afm) < 9:
                     raise ValueError(f"There is an error in {trn}")

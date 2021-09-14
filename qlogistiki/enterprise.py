@@ -1,4 +1,4 @@
-from qlogistiki.book import Book
+from .book import Book
 
 
 class Partner:
@@ -27,7 +27,7 @@ class Partner:
         pass
 
     def __str__(self):
-        return f"{self.afm} " f"{self.name} " f"{self.country} " f"{self.account}"
+        return f"{self.afm} {self.name} {self.country}"
 
     def __repr__(self):
         return (

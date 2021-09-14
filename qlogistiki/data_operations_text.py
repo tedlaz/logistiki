@@ -1,6 +1,6 @@
 import os
-from qlogistiki.parser_text import parse
-from qlogistiki.book import Book
+from .parser_text import parse
+from .book import Book
 
 
 def load_from_text(text_file):

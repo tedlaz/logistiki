@@ -5,7 +5,7 @@ from PyQt5 import QtCore as qc
 from PyQt5 import QtGui as qg
 from PyQt5 import QtWidgets as qw
 
-from qlogistiki import data_operations_text as dot
+from . import data_operations_text as dot
 
 
 class Dmodel(qc.QAbstractTableModel):

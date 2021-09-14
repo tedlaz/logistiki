@@ -1,5 +1,5 @@
 from qlogistiki.data_manager_abstract import AbstractDataManager
-from qlogistiki import sqlite
+from . import sqlite
 
 
 class DataManager(AbstractDataManager):

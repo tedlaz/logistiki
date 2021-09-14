@@ -4,7 +4,7 @@ from datetime import datetime
 import readline
 
 # from qlogistiki.sqlite import DataManager
-from qlogistiki.data_manager_text import DataManager
+from .data_manager_text import DataManager
 
 dm = DataManager()
 
@@ -17,7 +17,7 @@ class AddBookmarkCommand:
 
 
 class EditBookmarkCommand:
-    def __call__(self, id_):
+    def __call__(self, data):
         dm.update(data)
 
 
