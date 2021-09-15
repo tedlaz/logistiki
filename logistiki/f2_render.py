@@ -186,7 +186,7 @@ def f2_render(head, data, html_file=None):  # , template=f2_template):
             html_data[key] = val
     # Finally save the form
     if html_file:
-        with open(html_file, "w") as fout:
+        with open(html_file, "w", encoding='utf8') as fout:
             fout.write(F2_HTML.format(**html_data))
         logger.info(f"fpa report saved to file: {html_file}")
     else:
@@ -195,7 +195,8 @@ def f2_render(head, data, html_file=None):  # , template=f2_template):
 
 if __name__ == "__main__":
     # print(render_f2({'epon': 'ΛΑΖΑΡΟΣ'}, 'skata.html'))
-    HEAD = {"epon": "ΔΟΚΙΜΗ ΕΠΕ", "afm": "123123123", "apo": "1/2019", "eos": "3/2019"}
+    HEAD = {"epon": "ΔΟΚΙΜΗ ΕΠΕ", "afm": "123123123",
+            "apo": "1/2019", "eos": "3/2019"}
     # data = {301: 100, 303: 1500, 361: 1500, 381: 360, 401: 100, 364: 100, }
     DATA = {
         361: dec(95156.97),

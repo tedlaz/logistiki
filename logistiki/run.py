@@ -31,7 +31,7 @@ def command_line_args_parser():
     parser = argparse.ArgumentParser("logistiki.run")
     parser.add_argument("-i", "--inifile", default="logistiki.ini")
     parser.add_argument(
-        "-v", "--version", action="version", version="logistiki.run version:1.0"
+        "-v", "--version", action="version", version="logistiki.run version:1.4"
     )
     parser.add_argument("--debug", action="store_true",
                         help="Print debug info")
@@ -128,7 +128,7 @@ def main():
 
     elif args.command == "ee2excell":
         book = prs.parse_all(cfg)
-        book.ee_book2excel(filename=args.outfile)
+        book.ee_book2excel(cfg, filename=args.outfile)
 
     elif args.command == "imerologio":
         book = prs.parse_all(cfg)
@@ -137,8 +137,9 @@ def main():
 
     elif args.command == "isozygio":
         book = prs.parse_all(cfg)
-        fchart = cfg["accounts"]["chart"]
-        chart = read_chart(fchart)
+        # fchart = cfg["accounts"]["chart"]
+        # chart = read_chart(fchart)
+        chart = dict(cfg["chart"])
         print(book.isozygio(apo=args.apo, eos=args.eos, chart=chart))
 
     elif args.command == "kartella":
