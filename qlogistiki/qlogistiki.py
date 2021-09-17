@@ -119,9 +119,9 @@ class Dialog(qw.QWidget):
         self.tbl.doubleClicked.connect(self.show_arthro)
 
     def show_arthro(self, val):
-        fixed_font = qg.QFontDatabase.systemFont(qg.QFontDatabase.FixedFont)
+        # fixed_font = qg.QFontDatabase.systemFont(qg.QFontDatabase.FixedFont)
         num = val.sibling(val.row(), 0).data()
-        tr1 = self.book.get_transaction(num)
+        tr1 = self.book.get_transaction(num-1)
         qw.QMessageBox.information(self, f"Αρθρο {num}", tr1.as_str())
 
     def validate_ypoloipa(self):
