@@ -10,7 +10,7 @@ def load_from_text(text_file):
 def save2text(book, destination_file):
     if os.path.exists(destination_file):
         raise ValueError("file already exists")
-    with open(destination_file, "w") as fil:
+    with open(destination_file, "w", encoding='utf8') as fil:
         fil.write(f"$ {book.afm} {book.company_name}\n")
         for trn in sorted(book.transactions):
             fil.write(trn.as_str())

@@ -1,3 +1,4 @@
+"""Module to parse text accounting books"""
 from decimal import Decimal
 from collections import namedtuple, defaultdict
 from .utils import gr2dec
@@ -5,7 +6,7 @@ from .transaction import Transaction
 
 ValPoint = namedtuple("ValPoint", "date account delta")
 Anoigma = namedtuple("Anoigma", "date account value")
-fpa_prefix = "ΦΠΑ"
+FPA_PREFIX = "ΦΠΑ"
 
 
 def parse(file):
@@ -72,8 +73,8 @@ def parse(file):
             account, *txtval = accval.split()
             val = gr2dec(txtval[0]) if txtval else 0
             # Εδώ δημιουργείται αυτόματα ο λογαριασμός ΦΠΑ
-            if account == fpa_prefix:
-                account = f"{fpa_prefix}.{trn.last_account.name}"
+            if account == FPA_PREFIX:
+                account = f"{FPA_PREFIX}.{trn.last_account.name}"
                 pfpa = Decimal(trn.last_account.name.split(".")[-1][3:][:-1])
                 calfpa = trn.last_delta * pfpa / Decimal(100)
                 trn.fpa_status = 1

@@ -1,5 +1,5 @@
-from collections import namedtuple, defaultdict
-from decimal import Decimal
+"""Module Transaction"""
+from collections import namedtuple
 from .dec import Dec
 from .account import Account
 from .transaction_line import TransactionLine
@@ -41,6 +41,7 @@ class Transaction:
         self.fpa_status = 0  # 0: Χωρίς ΦΠΑ, 1: ΦΠΑ οκ, 2: ΦΠΑ λάθος
 
     def lines_full(self):
+        """Transaction lines enriched with date, parastatiko, per, afm"""
         full_lines = [
             Trl(
                 self.date,
@@ -83,6 +84,10 @@ class Transaction:
         return sum(l.debit for l in self.lines)
 
     def get_lines_by_account(self, account_part, running_sum, found):
+        """
+            If a transaction has more than one lines according to account_part
+            group them together as one with theyr sum as value
+        """
         for line in self.lines:
             if line.account.name.startswith(account_part):
                 if line.sxolio:
@@ -109,7 +114,7 @@ class Transaction:
 
     def add_connected_lines(self, acc1, acc2, value, pososto):
         self.add_line(acc1, value)
-        self.add_line(acc2, value * pososto / 100)
+        self.add_line(acc2, value * pososto / 100.0)
 
     def add_last_line(self, account, sxolio=""):
         if self.delta == 0:
@@ -143,16 +148,21 @@ class Transaction:
         )
 
     def as_str(self):
+        """returns a string representation of transaction"""
         maxnam = max([len(i.account.name) for i in self.lines])
-        stt = f'{self.date} "{self.parastatiko}" "{self.perigrafi}" {self.afm}\n'
+        maxn = max([len(i.delta.gr0) for i in self.lines])
+        if self.afm:
+            stt = f'{self.date} "{self.parastatiko}" "{self.perigrafi}" {self.afm}\n'
+        else:
+            stt = f'{self.date} "{self.parastatiko}" "{self.perigrafi}"\n'
         for i, lin in enumerate(self.lines):
             if self.number_of_lines == i + 1:
                 stt += f"  {lin.account.name}\n"
             else:
                 if lin.sxolio:
-                    tlin = f"  {lin.account.name:<{maxnam}} {lin.delta.gr0:>14} # {lin.sxolio}"
+                    tlin = f"  {lin.account.name:<{maxnam}} {lin.delta.gr0:>{maxn}} # {lin.sxolio}"
                 else:
-                    tlin = f"  {lin.account.name:<{maxnam}} {lin.delta.gr0:>14}"
+                    tlin = f"  {lin.account.name:<{maxnam}} {lin.delta.gr0:>{maxn}}"
                 stt += tlin.rstrip() + "\n"
         return stt
 

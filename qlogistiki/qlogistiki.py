@@ -1,3 +1,4 @@
+"""GUI for logistiki"""
 import os
 import sys
 

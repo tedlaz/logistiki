@@ -1,4 +1,4 @@
-from .utils import dec
+"""Module for Transaction_line"""
 from .account import Account
 from .dec import Dec
 
@@ -28,10 +28,10 @@ class TransactionLine:
         """For compatibility reasons only"""
         return self.value
 
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         return (self.value == other.value) and (self.account.name == other.account.name)
 
-    def __lt__(self, other):
+    def __lt__(self, other) -> bool:
         if self.account.name == other.account.name:
             return self.value < other.value
         return self.account.name < other.account.name
@@ -47,10 +47,10 @@ class TransactionLine:
             raise ValueError("For addition accounts must me the same")
         return TransactionLine(self.account.name, self.value + other.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (
             "TransactionLine(" f"account={self.account!r}, " f"value={self.value!r}" ")"
         )
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.account:<30} {self.debit:>14} {self.credit:>14}"
