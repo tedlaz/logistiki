@@ -1,3 +1,4 @@
+"""Import and run qlogistiki gui"""
 import qlogistiki.qlogistiki as ql
 
 

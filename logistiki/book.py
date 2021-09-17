@@ -1,11 +1,13 @@
+"""Module book.py"""
 from openpyxl import Workbook
-from openpyxl.styles import Alignment, Font, NamedStyle
+from openpyxl.styles import Alignment, Font
 from logistiki.utils import dec, dec2gr, startswith_any, dec2grp, date_iso2gr
 from logistiki.utils import levels_reverse
 from logistiki.logger import logger
 
 
-def trimino(isodate):
+def trimino(isodate: str) -> str:
+    """Returns Etos and trimino ('2021-09-17' -> '20213')"""
     yyy, mmm, _ = isodate.split("-")
     trim = {
         "01": "1",
@@ -24,14 +26,16 @@ def trimino(isodate):
     return f"{yyy}{trim[mmm]}"
 
 
-def date_iso2gr(iso_date):
-    if iso_date == "" or iso_date is None:
-        return ""
-    yyyy, mmm, ddd = iso_date.split("-")
-    return f"{ddd}/{mmm}/{yyyy}"
+# def date_iso2gr(iso_date: str) -> str:
+#     """YYYY-MM-DD -> DD/MM/YYYY"""
+#     if iso_date == "" or iso_date is None:
+#         return ""
+#     yyyy, mmm, ddd = iso_date.split("-")
+#     return f"{ddd}/{mmm}/{yyyy}"
 
 
-def clean_per(per):
+def clean_per(per: str) -> str:
+    """Καθάρισμα περιγραφών"""
     per = per.replace("-Τιμολόγιο Αγορών (Προμηθευτή)", "")
     per = per.replace("-Τιμολόγιο Αγορών (Προμηθευτή", "")
     per = per.replace("-Τιμολόγιο Πώλησης", "")
@@ -45,6 +49,7 @@ def clean_per(per):
 
 
 def ee_value_sign(acline):
+    """Αλλαγή προσήμου ανάλογα με το αν είναι Χρέωση ή Πίστωση"""
     if acline["account"][0] in "126":
         if acline["typ"] == 1:
             return acline["value"]
@@ -73,6 +78,8 @@ def closest_name(code: str, chart: dict) -> str:
 
 
 class Book:
+    """Double entry accounting book"""
+
     def __init__(self, co_data, transactions, accounts, afms) -> None:
         self.name = co_data["name"]
         self.afm = co_data["afm"]
@@ -82,33 +89,34 @@ class Book:
         self.transactions = transactions  # list of dict of transactions
         self.afms = afms
 
-    def trans_print(self, tran_id):
+    def trans_print(self, tran_id: int) -> None:
+        """Print a Transaction on terminal"""
         trans = self.transactions[tran_id - 1]
-        str = f"┌─◆ Άρθρο {trans['id']}\n"
-        str += f"│\n"
-        str += f"│ Ημερομηνία  : {date_iso2gr(trans['date'])}\n"
-        str += f"│ Παραστατικό : {trans['partype']} {trans['parno']}\n"
-        str += f"│ Περιγραφή   : {trans['perigrafi']} {trans['perigr2']}\n"
-        str += f"│ ΑΦΜ         : {trans['afm']}\n"
-        str += f"│\n"
+        stt = f"┌─◆ Άρθρο {trans['id']}\n"
+        stt += "│\n"
+        stt += f"│ Ημερομηνία  : {date_iso2gr(trans['date'])}\n"
+        stt += f"│ Παραστατικό : {trans['partype']} {trans['parno']}\n"
+        stt += f"│ Περιγραφή   : {trans['perigrafi']} {trans['perigr2']}\n"
+        stt += f"│ ΑΦΜ         : {trans['afm']}\n"
+        stt += "│\n"
         ltm = "│ {acc:<13} {acp:<40} {deb:>14} {cre:>14} \n"
-        str += ltm.format(
+        stt += ltm.format(
             acc="Λογαριασμός", acp="Περιγραφή", deb="Χρέωση", cre="Πίστωση"
         )
-        str += ltm.format(
+        stt += ltm.format(
             acc="-----------", acp="---------", deb="------", cre="-------"
         )
-        # str += '│ ' + '-' * 50 + '\n'
-        # str += ltm.format(acc='-----------', deb='------', cre='-------')
+        # stt += '│ ' + '-' * 50 + '\n'
+        # stt += ltm.format(acc='-----------', deb='------', cre='-------')
         for lin in trans["lines"]:
             deb = dec2gr(lin["value"] if lin["typ"] == 1 else 0)
             cre = dec2gr(lin["value"] if lin["typ"] == 2 else 0)
             acp = self.accounts[lin["account"]]
-            str += ltm.format(acc=lin["account"], acp=acp, deb=deb, cre=cre)
-        str += "└─►\n"
-        print(str)
+            stt += ltm.format(acc=lin["account"], acp=acp, deb=deb, cre=cre)
+        stt += "└─►\n"
+        print(stt)
 
-    def isozygio(self, apo=None, eos=None, chart=None):
+    def isozygio(self, apo=None, eos=None, chart=None) -> str:
         """
         Ισοζύγιο λογαριασμών
         """
@@ -162,6 +170,7 @@ class Book:
         return tmp
 
     def filter_by_dates(self, apo: str, eos: str):
+        """Filtering Transactions by dates"""
         for transaction in self.transactions:
             if apo and transaction["date"] < apo:
                 continue
@@ -196,9 +205,9 @@ class Book:
         """
         Αναφορά ΦΠΑ για την περίοδο apo-eos
         """
-        pass
+        return f"fpa (apo={apo}, eos={eos})Not Implemented"
 
-    def ee_book(self):
+    def ee_book(self) -> list:
         """
         Βιβλίο εσόδων-εξόδων
         """
@@ -311,15 +320,16 @@ class Book:
         return eebook
 
     def ee_book2excel(self, cfg, filename="txt.xlsx"):
+        """Βιβλίο Εσόδων-Εξόδων σε excell αρχείο"""
         el2ee = dict(cfg["eeaccounts"])
         eecols = dict(cfg["eecols"])
         # Έλεγχος εάν όλες οι τιμές του el2ee είναι κλειδιά στον eecols
         for val in el2ee.values():
             if val not in eecols.keys():
                 raise ValueError(f"Η στήλη {val} δεν έχει περιγραφή.")
-        wb = Workbook()
+        wb1 = Workbook()
         # date_style = NamedStyle(name="datetime", number_format="YYYY-MM-DD")
-        sheet = wb.active
+        sheet = wb1.active
         sheet.page_setup.orientation = 'landscape'  # sheet.ORIENTATION_LANDSCAPE
         sheet.row_dimensions[1].height = 70
         sheet.row_dimensions[1].font = Font(name="Liberation Sans", bold=True)
@@ -337,7 +347,7 @@ class Book:
                 trn.get(ee_key, "")
                 sheet.cell(column=j + 1, row=i + 2, value=trn.get(ee_key, ""))
 
-        wb.save(filename)
+        wb1.save(filename)
 
     def myf_xml(self, exclude=None, only=None, koybas=(), rfpa=(), action="replace"):
         """
@@ -355,7 +365,7 @@ class Book:
             "oexpenses": {},
         }
         dat = "2020-12-31"
-        di1 = {}
+        # di1 = {}
         di2 = {}
         di6 = {}
         di7 = {}

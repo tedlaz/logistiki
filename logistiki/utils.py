@@ -1,4 +1,6 @@
+"""utils: Varius utilities"""
 from decimal import Decimal, ROUND_HALF_UP
+# from logging import exception
 import os
 from logistiki.logger import logger
 
@@ -26,49 +28,52 @@ def isNum(val):  # is val number or not
 
 
 def dec(anum, decimals=2):
+    """Create a Decimal with fixed number of decimal digits"""
     if decimals <= 1:
         decimals = 1
     rounder = Decimal("0." + "0" * (decimals - 1) + "1")
     try:
         val = Decimal(anum).quantize(rounder, rounding=ROUND_HALF_UP)
-    except:
+    except Exception:
         val = Decimal(0).quantize(rounder, rounding=ROUND_HALF_UP)
     return val
 
 
 def dec2gr(anum):
+    """123,456.78 -> 123.456,78"""
     if anum == 0:
         return ""
     return f"{anum:,.2f}".replace(",", "|").replace(".", ",").replace("|", ".")
 
 
 def gr2dec(tnum):
+    """gr2dec"""
     return dec(tnum.strip().replace(".", "").replace(",", "."))
 
 
-def is_afm(a):
+def is_afm(afm):
     """
     Algorithmic validation of Greek Vat Numbers
     """
-    if not isNum(a):
+    if not isNum(afm):
         return False
-    if a.startswith("00000"):
+    if afm.startswith("00000"):
         return False
-    if len(a) != 9:
+    if len(afm) != 9:
         return False
-    b = (
-        int(a[0]) * 256
-        + int(a[1]) * 128
-        + int(a[2]) * 64
-        + int(a[3]) * 32
-        + int(a[4]) * 16
-        + int(a[5]) * 8
-        + int(a[6]) * 4
-        + int(a[7]) * 2
+    va1 = (
+        int(afm[0]) * 256
+        + int(afm[1]) * 128
+        + int(afm[2]) * 64
+        + int(afm[3]) * 32
+        + int(afm[4]) * 16
+        + int(afm[5]) * 8
+        + int(afm[6]) * 4
+        + int(afm[7]) * 2
     )
-    c = b % 11
-    d = c % 10
-    return d == int(a[8])
+    va2 = va1 % 11
+    va3 = va2 % 10
+    return va3 == int(afm[8])
 
 
 def startswith_any(txts_tuple: tuple, filters_tuple: tuple) -> bool:
@@ -86,41 +91,52 @@ def startswith_any(txts_tuple: tuple, filters_tuple: tuple) -> bool:
 
 
 def dec2grp(anum):
+    """dec2grp"""
     return f"{anum}".replace(".", ",")
 
 
 # From old ugrdate
 
 
-def date2gr(adate):
+def date2gr(adate) -> str:
+    """Python date to DD/MM/YYYY"""
     return f"{adate.day}/{adate.month}/{adate.year}"
 
 
 def date_gr2iso(greek_date):
     """Μετατρέπει μια Ελληνική ημερομηνία σε iso"""
-    dd, mm, yyyy = greek_date.split("/")
-    return "%s-%s-%s" % (yyyy, mm, dd)
+    ddd, mmm, yyyy = greek_date.split("/")
+    # return "%s-%s-%s" % (yyyy, mmm, ddd)
+    return f"{yyyy}-{mmm}-{ddd}"
 
 
-def date_iso2gr(isodate):
-    """Μετατρέπει μια iso ημερομηνία σε Ελληνική"""
-    try:
-        yyyy, mm, dd = isodate.split("-")
-        return f"{dd}/{mm}/{yyyy}"
-    except AttributeError:
+# def date_iso2gr(isodate):
+#     """Μετατρέπει μια iso ημερομηνία σε Ελληνική"""
+#     try:
+#         yyyy, mm, dd = isodate.split("-")
+#         return f"{dd}/{mm}/{yyyy}"
+#     except AttributeError:
+#         return ""
+
+def date_iso2gr(iso_date: str) -> str:
+    """YYYY-MM-DD -> DD/MM/YYYY"""
+    if iso_date == "" or iso_date is None:
         return ""
-
+    yyyy, mmm, ddd = iso_date.split("-")
+    return f"{ddd}/{mmm}/{yyyy}"
 
 # From account.py
 
 
 def levels(account: str) -> tuple:
+    """'12.34.56' -> ('1', '12', '12.34', '12.34.56')"""
     spl = account.split(ACCOUNT_SPLITTER)
     lvls = [ACCOUNT_SPLITTER.join(spl[: i + 1]) for i in range(len(spl))]
     return tuple([account[0]] + lvls)
 
 
 def levels_reverse(account: str) -> tuple:
+    """'12.34.56' -> ('12.34.56', '12.34', '12', '1')"""
     spl = account.split(ACCOUNT_SPLITTER)
     lvls = [ACCOUNT_SPLITTER.join(spl[: i + 1]) for i in range(len(spl))]
     lvls = [account[0]] + lvls
@@ -135,7 +151,7 @@ def read_chart(chart_file):
     """
     chart = {}
     if os.path.exists(chart_file):
-        with open(chart_file) as fil:
+        with open(chart_file, encoding="utf8") as fil:
             for lin in fil.readlines():
                 if len(lin.strip()) < 3:
                     continue

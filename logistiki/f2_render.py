@@ -1,4 +1,4 @@
-# import os
+"""f2_render: Render f2 tax form"""
 from logistiki.utils import dec
 from logistiki.logger import logger
 from logistiki.f2_html import F2_HTML
@@ -161,7 +161,8 @@ def pre_render(header, data):
     """
     Prepare data
     """
-    adic = {"i%s" % key: dec2str(data[key]) for key in data}
+    # adic = {"i%s" % key: dec2str(data[key]) for key in data}
+    adic = {f"i{key}": dec2str(data[key]) for key in data}
     adic["apo"] = header.get("apo", "")
     adic["eos"] = header.get("eos", "")
     adic["epon"] = header.get("name", "")

@@ -1,14 +1,19 @@
 #!/usr/bin/env python
+"""Module run"""
 import os
 from configparser import ConfigParser
 import argparse
-import sys
 from logistiki import parsers as prs
-from logistiki.utils import read_chart
+# from logistiki.utils import read_chart
 from logistiki.myf2xml import create_xml
+from logistiki.afm import check_afms
+from logistiki.fpa import fpa
+from logistiki.fpa_check import check_fpa
+from logistiki.xml_check import printmyf
 
 
-def myf(cfg, out_file):
+def myf(cfg, out_file: str):
+    """Δημιουργία αρχείου ΜΥΦ"""
     exclude = cfg["myf"]["exclude"].split() or None
     only = cfg["myf"]["only"].split() or None
     koybas = cfg["myf"]["koybas"].split() or ()
@@ -19,9 +24,9 @@ def myf(cfg, out_file):
     xml_text, afms = create_xml(data)
     print(xml_text)
     if out_file:
-        with open("zzz_afms_to_validate.txt", "w") as fil:
+        with open("zzz_afms_to_validate.txt", "w", encoding="utf8") as fil:
             fil.write("\n".join(afms))
-        with open(out_file, "w") as fil:
+        with open(out_file, "w", encoding="utf8") as fil:
             fil.write(xml_text)
             print(f"Το αρχείο {out_file} δημιουργήθηκε επιτυχώς !!!")
 
@@ -87,9 +92,9 @@ def command_line_args_parser():
     fpap.add_argument("-y", "--ypo", help="Πιστωτικό υπόλοιπο")
 
     # fpachk
-    fpachkp = subp.add_parser(
-        "fpachk", help="Ελεγχος αναλυτικός εγγραφών με ΦΠΑ")
-
+    # fpachkp = subp.add_parser(
+    #     "fpachk", help="Ελεγχος αναλυτικός εγγραφών με ΦΠΑ")
+    subp.add_parser("fpachk", help="Ελεγχος αναλυτικός εγγραφών με ΦΠΑ")
     # xmlchk
     xmlchkp = subp.add_parser(
         "xmlchk", help="Έλεγχος αρχείου xml συγκεντρωτικής")
@@ -98,6 +103,7 @@ def command_line_args_parser():
 
 
 def main():
+    """Main program"""
     args_parser = command_line_args_parser()
     args = args_parser.parse_args()
 
@@ -111,13 +117,12 @@ def main():
         raise FileNotFoundError("logistiki.ini file does not exist")
 
     if args.command == "afm":
-        from logistiki.afm import check_afms
 
         if args.afms:
             check_afms(args.afms)
         else:
             afm_list = []
-            with open(args.file) as fil:
+            with open(args.file, encoding="utf8") as fil:
                 for lin in fil.readlines():
                     afm_list.append(lin.strip())
             check_afms(afm_list)
@@ -150,18 +155,15 @@ def main():
         myf(cfg, args.out)
 
     elif args.command == "fpa":
-        from logistiki.fpa import fpa
 
         # fpa(args.apo, args.eos, args.out)
         fpa(cfg, args)
 
     elif args.command == "fpachk":
-        from logistiki.fpa_check import check_fpa
 
         check_fpa(cfg)
 
     elif args.command == "xmlchk":
-        from logistiki.xml_check import printmyf
 
         printmyf(args.xml_file)
 
