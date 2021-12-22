@@ -1,4 +1,2 @@
 zeep
 openpyxl
-pytest
-PyQt5
